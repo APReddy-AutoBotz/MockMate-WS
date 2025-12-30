@@ -17,7 +17,6 @@
     "netlify:build": "npm run build && cd netlify/functions && npm install"
   },
   "dependencies": {
-    "@google/genai": "^1.28.0",
     "firebase": "^10.8.0",
     "framer-motion": "^11.3.11",
     "i18next": "^25.7.3",

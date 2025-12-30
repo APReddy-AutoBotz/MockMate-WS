@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
       },
       build: {
         rollupOptions: {
+          external: ['@google/genai', 'firebase-admin'],
           output: {
             manualChunks: {
                 // Split vendor chunks
