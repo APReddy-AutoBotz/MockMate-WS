@@ -210,7 +210,7 @@ const App: React.FC = () => {
                 );
             case 'ROLE_SELECTION':
                 return (
-                    <motion.div key="role" {...pageAnimation} className="w-full max-w-2xl">
+                    <motion.div key="role" {...pageAnimation} className="w-full max-w-2xl px-4">
                         <GlassCard>
                             <ErrorBoundary>
                                 <RoleCapture
@@ -225,7 +225,7 @@ const App: React.FC = () => {
                 );
             case 'HISTORY_VIEW':
                 return (
-                    <motion.div key="history" {...pageAnimation} className="w-full max-w-5xl">
+                    <motion.div key="history" {...pageAnimation} className="w-full max-w-5xl px-4">
                         <Suspense fallback={
                             <div className="flex items-center justify-center p-8">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -245,7 +245,7 @@ const App: React.FC = () => {
                 );
             case 'CONTEXT_UPLOAD':
                 return (
-                    <motion.div key="context" {...pageAnimation} className="w-full max-w-3xl">
+                    <motion.div key="context" {...pageAnimation} className="w-full max-w-3xl px-4">
                         <GlassCard>
                             <ErrorBoundary>
                                 <SessionPrep
@@ -259,27 +259,25 @@ const App: React.FC = () => {
                 );
             case 'SESSION_ACTIVE':
                 return (
-                    <motion.div key="session" {...pageAnimation} className="fixed inset-0 w-full h-full z-50 bg-[#0A192F]">
-                        <div className="w-full h-full">
-                            <Suspense fallback={
-                                <div className="flex items-center justify-center h-full">
-                                    <div className="text-white text-lg">Loading interview session...</div>
-                                </div>
-                            }>
-                                <ErrorBoundary>
-                                    <LazyMockSession
-                                        sessionContext={sessionContext!}
-                                        onReportGenerated={handleReportGenerated}
-                                        onCancel={handleCancelSession}
-                                    />
-                                </ErrorBoundary>
-                            </Suspense>
-                        </div>
-                    </motion.div>
+                    <div className="fixed inset-0 w-full h-full z-50 bg-[#0A192F]">
+                        <Suspense fallback={
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-white text-lg">Loading interview session...</div>
+                            </div>
+                        }>
+                            <ErrorBoundary>
+                                <LazyMockSession
+                                    sessionContext={sessionContext!}
+                                    onReportGenerated={handleReportGenerated}
+                                    onCancel={handleCancelSession}
+                                />
+                            </ErrorBoundary>
+                        </Suspense>
+                    </div>
                 );
             case 'REPORT_VIEW':
                 return (
-                    <motion.div key="report" {...pageAnimation} className="w-full max-w-5xl">
+                    <motion.div key="report" {...pageAnimation} className="w-full max-w-5xl px-4">
                         <Suspense fallback={
                             <div className="flex items-center justify-center p-8">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -303,29 +301,29 @@ const App: React.FC = () => {
     return (
         <ErrorBoundary>
             <ToastProvider>
-                <div className="min-h-screen w-full flex flex-col items-center justify-center p-4">
+                <div className="min-h-screen w-full flex flex-col">
                     {showAppHeader && (
-                        <motion.header {...headerAnimation} className="absolute top-0 left-0 w-full px-12 py-10 flex justify-between items-center z-20 pointer-events-none">
+                        <motion.header {...headerAnimation} className="absolute top-0 left-0 w-full px-4 sm:px-12 py-6 sm:py-10 flex justify-between items-center z-20 pointer-events-none">
                             <div onClick={handleRestart} className="cursor-pointer transition-transform hover:scale-[1.02] pointer-events-auto">
-                                <Logo className="h-16 w-auto" />
+                                <Logo className="h-12 w-auto sm:h-16" />
                             </div>
-                            <div className="flex items-center gap-8 pointer-events-auto">
+                            <div className="flex items-center gap-4 sm:gap-8 pointer-events-auto">
                                 <button
                                     onClick={toggleHistory}
-                                    className="text-[11px] font-bold text-text-secondary hover:text-info-blue uppercase tracking-widest transition-colors"
+                                    className="text-[9px] sm:text-[11px] font-bold text-text-secondary hover:text-info-blue uppercase tracking-widest transition-colors"
                                 >
                                     Journal
                                 </button>
                                 <button
                                     onClick={handleLogout}
-                                    className="text-[10px] font-bold bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl px-6 py-3 transition-all backdrop-blur-md uppercase tracking-widest"
+                                    className="text-[8px] sm:text-[10px] font-bold bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg sm:rounded-xl px-3 sm:px-6 py-2 sm:py-3 transition-all backdrop-blur-md uppercase tracking-widest"
                                 >
                                     End Session
                                 </button>
                             </div>
                         </motion.header>
                     )}
-                    <main className="flex-grow w-full flex flex-col items-center justify-center p-2 relative z-10 overflow-hidden">
+                    <main className="flex-grow w-full flex flex-col items-center justify-center p-2 sm:p-4 relative z-10 overflow-hidden">
                         <AnimatePresence mode="wait">
                             {renderPageContent()}
                         </AnimatePresence>
