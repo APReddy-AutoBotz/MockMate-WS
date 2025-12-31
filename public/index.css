@@ -1,0 +1,62 @@
+/* PWA Mobile overrides (applies only when index.tsx sets html.pwa-mobile) */
+
+html.pwa-mobile body.bg-executive {
+  background-attachment: scroll !important;
+}
+
+html.pwa-mobile .glass-premium {
+  background: rgba(10, 25, 47, 0.35) !important;
+  backdrop-filter: none !important;
+  border-color: transparent !important;
+}
+
+/* Flatten the repeated "glass" wrappers across the app (PWA mobile only)
+   We target elements that use both backdrop blur + borders/shadows which are the main cause of nested boxes. */
+html.pwa-mobile [class*="backdrop-blur"][class*="border"],
+html.pwa-mobile [class*="backdrop-blur"][class*="shadow"],
+html.pwa-mobile [class*="glass"][class*="border"],
+html.pwa-mobile [class*="glass"][class*="shadow"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove container borders that create the "nested frame" look */
+html.pwa-mobile [class*="border-white/"] {
+  border-color: transparent !important;
+}
+
+/* Reduce large rounding used on cards/panels; keep small rounding for buttons/inputs */
+html.pwa-mobile [class*="rounded-3xl"],
+html.pwa-mobile [class*="rounded-[2"],
+html.pwa-mobile [class*="rounded-[2."],
+html.pwa-mobile [class*="rounded-[2rem"],
+html.pwa-mobile [class*="rounded-[2.5rem"],
+html.pwa-mobile [class*="rounded-[3rem"],
+html.pwa-mobile [class*="rounded-[2.5"],
+html.pwa-mobile [class*="rounded-[2.0"],
+html.pwa-mobile [class*="rounded-2xl"] {
+  border-radius: 12px !important;
+}
+
+/* Tone down big card paddings to reduce the "panel inside panel" feeling */
+html.pwa-mobile [class*="p-10"],
+html.pwa-mobile [class*="p-12"],
+html.pwa-mobile [class*="p-14"],
+html.pwa-mobile [class*="px-10"],
+html.pwa-mobile [class*="py-10"] {
+  padding: 16px !important;
+}
+
+/* Hide decorative border overlays used inside glass cards */
+html.pwa-mobile [class*="pointer-events-none"][class*="border"],
+html.pwa-mobile [class*="pointer-events-none"][class*="rounded"] {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  opacity: 0 !important;
+}
+
+/* Ensure the main root uses full width on small screens */
+html.pwa-mobile #root {
+  width: 100% !important;
+}
