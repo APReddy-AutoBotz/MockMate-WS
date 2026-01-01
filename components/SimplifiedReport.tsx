@@ -179,6 +179,42 @@ const SimplifiedReport: React.FC<SimplifiedReportProps> = ({ report, onRestart, 
                                     </div>
                                 )}
 
+                                {/* Better Answers Section */}
+                                {report.questionPerformance && report.questionPerformance.length > 0 && (
+                                    <div>
+                                        <h3 className="text-lg md:text-xl font-bold text-white mb-4">💡 Better Answers</h3>
+                                        <p className="text-sm md:text-base text-white/60 mb-4">
+                                            Here's how top performers would have answered your toughest questions:
+                                        </p>
+                                        <div className="space-y-4">
+                                            {report.questionPerformance
+                                                .filter(q => q.max_impact_response && q.user_transcript !== '[SKIPPED]')
+                                                .slice(0, 3)
+                                                .map((q, i) => (
+                                                    <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+                                                        <div className="flex items-start gap-2">
+                                                            <span className="text-blue-400 font-bold">Q:</span>
+                                                            <p className="text-sm md:text-base text-white/90 font-medium flex-1">
+                                                                {q.question_text}
+                                                            </p>
+                                                        </div>
+                                                        <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-3 ml-6">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className="text-xs font-bold text-green-400 uppercase tracking-wider">
+                                                                    ⭐ Ideal Response
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-sm md:text-base text-white/80 leading-relaxed italic">
+                                                                "{q.max_impact_response}"
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            }
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Summary */}
                                 <div>
                                     <h3 className="text-lg md:text-xl font-bold text-white mb-3">Overall Feedback</h3>
@@ -239,8 +275,8 @@ const SimplifiedReport: React.FC<SimplifiedReportProps> = ({ report, onRestart, 
                                     </div>
                                     <div className="flex items-center gap-3 text-xs md:text-sm text-white/60">
                                         <span className={`px-2 py-1 rounded ${action.impact === 'high' ? 'bg-red-500/20 text-red-400' :
-                                                action.impact === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                    'bg-blue-500/20 text-blue-400'
+                                            action.impact === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                'bg-blue-500/20 text-blue-400'
                                             } font-bold uppercase`}>
                                             {action.impact} Impact
                                         </span>

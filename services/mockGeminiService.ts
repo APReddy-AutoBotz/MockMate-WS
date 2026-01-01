@@ -526,8 +526,43 @@ export const simulateExecution = async (code: string, language: string): Promise
     }
 };
 
-export const getHintForQuestion = async (_question: string): Promise<string> => {
-    return 'Focus on clarifying the problem, stating assumptions, and describing tradeoffs.';
+export const getHintForQuestion = async (question: string): Promise<string> => {
+    // Generate contextual, helpful hints based on the specific question
+    try {
+        const hintPrompt = `You are a supportive interview coach. The candidate is stuck on this question:
+
+"${question}"
+
+Provide a SHORT, encouraging hint (max 2 sentences) that:
+1. Does NOT give away the answer
+2. Guides their thinking direction
+3. Suggests what framework or approach to use (e.g., STAR, problem-solving steps)
+4. Is specific to THIS question, not generic
+
+Examples of good hints:
+- "Think about a specific project where you had to make trade-offs. What were the constraints?"
+- "Break this down: What's the business goal? What metrics would you track? How would you measure success?"
+- "Consider the STAR method: What was the Situation? What did you do specifically?"
+
+Return ONLY the hint text, no intro.`;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.0-flash-exp',
+            contents: [{ parts: [{ text: hintPrompt }] }],
+            config: {
+                temperature: 0.7,
+                maxOutputTokens: 150
+            }
+        });
+
+        const hint = getResponseText(response).trim();
+        return hint || 'Think about a specific example from your experience. What was the situation and what did you do?';
+
+    } catch (error) {
+        console.error('Hint generation failed:', error);
+        // Fallback to a helpful generic hint
+        return 'Break this down into steps: What was the situation? What action did you take? What was the result?';
+    }
 };
 
 // Helper to convert Blob to Base64

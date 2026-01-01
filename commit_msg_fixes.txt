@@ -1,0 +1,26 @@
+fix: Add dynamic hints and Better Answers section
+
+Issue #1: Better Answers now visible on screen
+- Add "Better Answers" section to SimplifiedReport
+- Shows top 3 ideal mastery responses  
+- Displays in "Detailed Breakdown" (expand to see)
+- Shows question + ideal response side-by-side
+
+Issue #2: Coaching hints now dynamic
+- Replace static hint with AI-generated contextual hints
+- Hints are specific to each question
+- Suggests frameworks (STAR, problem-solving steps)
+- Encourages without giving away the answer
+- Fallback to helpful generic hint if AI fails
+
+Implementation:
+- Modified SimplifiedReport.tsx to show max_impact_response
+- Updated getHintForQuestion() in mockGeminiService.ts
+- Hints use Gemini API with temperature 0.7 for creativity
+- Better answers filtered to exclude skipped questions
+- Limited to top 3 for clarity
+
+Benefits:
+- Users can now learn from ideal answers on screen
+- Coaching mode provides real, contextual help
+- Better learning experience for candidates
