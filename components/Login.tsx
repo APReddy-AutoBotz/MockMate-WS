@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import GlassCard from './GlassCard';
+import AppContainer from './AppContainer';
 import { GoogleIcon } from './icons/SocialIcons';
 import { auth, googleProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, isUsingMockAuth, signOut } from '../services/firebaseClient';
 import { signInWithPopup } from 'firebase/auth';
 import { audioService } from '../services/audioService';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface LoginProps {
     onLoginSuccess: () => void;
@@ -13,6 +14,7 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBack }) => {
+    const isMobile = useIsMobile();
     const [mode, setMode] = useState<'signin' | 'signup'>('signin');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -137,7 +139,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBack }) => {
             exit="hidden"
             className="w-full max-w-[480px]"
         >
-            <GlassCard className="p-0 overflow-hidden bg-[#0A192F]/40 backdrop-blur-2xl border-white/5 shadow-2xl">
+            <AppContainer className="p-0 overflow-hidden bg-[#0A192F]/40 backdrop-blur-2xl border-white/5 shadow-2xl" noPadding>
                 {/* Elite Status Banner - Unified with Flow */}
                 {isUsingMockAuth && (
                     <motion.div variants={itemVariants} className="bg-accent-amber/10 border-b border-accent-amber/20 py-3 px-6 flex items-center justify-between">
@@ -154,14 +156,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBack }) => {
                     </motion.div>
                 )}
 
-                <div className="p-10 md:p-14 space-y-10">
-                    <motion.header variants={itemVariants} className="text-center space-y-4">
-                        <h2 className="text-5xl font-serif font-bold text-white tracking-tight">
+                <div className="p-8 md:p-14 space-y-8 md:space-y-10">
+                    <motion.header variants={itemVariants} className="text-center space-y-3 md:space-y-4">
+                        <h2 className="text-4xl md:text-5xl font-serif font-bold text-white tracking-tight">
                             {mode === 'signin' ? 'Welcome Back' : 'Join Elite'}
                         </h2>
                         <div className="flex flex-col items-center gap-1">
                             <div className="h-px w-12 bg-action-teal/40 mb-2" />
-                            <p className="text-text-secondary text-[13px] font-medium opacity-60 leading-relaxed max-w-[280px] mx-auto">
+                            <p className="text-text-secondary text-[12px] md:text-[13px] font-medium opacity-60 leading-relaxed max-w-[280px] mx-auto">
                                 {mode === 'signin'
                                     ? 'Enter your credentials to access your growth journal.'
                                     : 'Start your professional rehearsal journey today.'}
@@ -184,14 +186,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBack }) => {
                         )}
                     </AnimatePresence>
 
-                    <motion.form variants={itemVariants} onSubmit={handleAuth} className="space-y-6">
+                    <motion.form variants={itemVariants} onSubmit={handleAuth} className="space-y-5 md:space-y-6">
                         <div className="space-y-2">
                             <label className="block text-[10px] font-black text-white/30 uppercase tracking-[0.25em] ml-2">Access Email</label>
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-5 px-6 text-white text-sm focus:bg-white/[0.05] focus:border-action-teal/40 outline-none transition-all placeholder:text-white/10"
+                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 md:py-5 px-6 text-white text-sm focus:bg-white/[0.05] focus:border-action-teal/40 outline-none transition-all placeholder:text-white/10"
                                 placeholder="name@domain.com"
                                 required
                             />
@@ -203,17 +205,17 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBack }) => {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-5 px-6 text-white text-sm focus:bg-white/[0.05] focus:border-action-teal/40 outline-none transition-all placeholder:text-white/10"
+                                className="w-full bg-white/[0.02] border border-white/5 rounded-2xl py-4 md:py-5 px-6 text-white text-sm focus:bg-white/[0.05] focus:border-action-teal/40 outline-none transition-all placeholder:text-white/10"
                                 placeholder="••••••••"
                                 required
                             />
                         </div>
 
-                        <div className="pt-4 flex flex-col gap-4">
+                        <div className="pt-2 md:pt-4 flex flex-col gap-4">
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full bg-action-teal text-base-surface font-black py-5 rounded-2xl text-[11px] uppercase tracking-[0.25em] hover:bg-[#15e0c6] hover:shadow-[0_20px_40px_-15px_rgba(20,200,176,0.3)] active:scale-[0.98] transition-all disabled:opacity-40"
+                                className="w-full bg-action-teal text-base-surface font-black py-4 md:py-5 rounded-2xl text-[10px] md:text-[11px] uppercase tracking-[0.25em] hover:bg-[#15e0c6] hover:shadow-[0_20px_40px_-15px_rgba(20,200,176,0.3)] active:scale-[0.98] transition-all disabled:opacity-40"
                             >
                                 {isLoading ? 'Authenticating...' : (mode === 'signin' ? 'Sign In' : 'Establish Profile')}
                             </button>
@@ -232,7 +234,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBack }) => {
                     </motion.form>
 
                     {!isUsingMockAuth && (
-                        <motion.div variants={itemVariants} className="space-y-8">
+                        <motion.div variants={itemVariants} className="space-y-6 md:space-y-8">
                             <div className="relative flex items-center gap-4">
                                 <div className="h-px flex-grow bg-white/5" />
                                 <span className="text-[10px] font-black text-white/10 uppercase tracking-widest">Global Auth</span>
@@ -242,7 +244,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBack }) => {
                             <button
                                 onClick={handleGoogleLogin}
                                 disabled={isLoading}
-                                className="w-full flex items-center justify-center gap-4 bg-white/5 hover:bg-white/10 text-white font-bold py-5 px-6 rounded-2xl border border-white/10 transition-all text-[11px] uppercase tracking-widest active:scale-[0.98]"
+                                className="w-full flex items-center justify-center gap-4 bg-white/5 hover:bg-white/10 text-white font-bold py-4 md:py-5 px-6 rounded-2xl border border-white/10 transition-all text-[10px] md:text-[11px] uppercase tracking-widest active:scale-[0.98]"
                             >
                                 <GoogleIcon className="w-5 h-5" />
                                 Continue with Google
@@ -250,25 +252,26 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBack }) => {
                         </motion.div>
                     )}
 
-                    <motion.div variants={itemVariants} className="pt-10 flex flex-col items-center gap-6">
+                    <motion.div variants={itemVariants} className="pt-6 md:pt-10 flex flex-col items-center gap-5 md:gap-6">
                         <button
                             onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(null); }}
-                            className="text-[11px] font-black text-info-blue hover:text-white uppercase tracking-[0.2em] transition-colors"
+                            className="text-[10px] md:text-[11px] font-black text-info-blue hover:text-white uppercase tracking-[0.2em] transition-colors"
                         >
                             {mode === 'signin' ? "New here? Create Membership" : "Have an account? Access Portal"}
                         </button>
 
                         <button
                             onClick={onBack}
-                            className="text-[10px] font-black text-white/20 hover:text-white/40 uppercase tracking-[0.3em] transition-all"
+                            className="text-[9px] md:text-[10px] font-black text-white/20 hover:text-white/40 uppercase tracking-[0.3em] transition-all"
                         >
                             ← Back to Landing
                         </button>
                     </motion.div>
                 </div>
-            </GlassCard>
+            </AppContainer>
         </motion.div>
     );
 };
 
 export default Login;
+

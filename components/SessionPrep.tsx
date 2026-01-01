@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import SessionControlsEditor from './SessionControlsEditor';
 import { UploadIcon } from './icons/UploadIcon';
 import { audioService } from '../services/audioService';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface SessionPrepProps {
     onContextReady: (context: SessionContext) => void;
@@ -26,6 +27,7 @@ const defaultControls: SessionControls = {
 };
 
 const FileDropZone: React.FC<{ onTextReady: (text: string) => void; mode: 'job_description' | 'question_bank' }> = ({ onTextReady, mode }) => {
+    const isMobile = useIsMobile();
     const [fileName, setFileName] = useState<string | null>(null);
     const [isPasting, setIsPasting] = useState(false);
     const [pastedText, setPastedText] = useState('');
@@ -75,7 +77,7 @@ const FileDropZone: React.FC<{ onTextReady: (text: string) => void; mode: 'job_d
                     >
                         <div
                             onClick={() => fileInputRef.current?.click()}
-                            className="w-full py-8 px-10 border-2 border-dashed border-info-blue/10 rounded-3xl bg-white/[0.01] hover:bg-white/[0.03] hover:border-info-blue/30 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group"
+                            className="w-full py-6 md:py-8 px-6 md:px-10 border-2 border-dashed border-info-blue/10 rounded-2xl md:rounded-3xl bg-white/[0.01] hover:bg-white/[0.03] hover:border-info-blue/30 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 md:gap-4 group"
                         >
                             <input
                                 type="file"
@@ -84,8 +86,8 @@ const FileDropZone: React.FC<{ onTextReady: (text: string) => void; mode: 'job_d
                                 className="hidden"
                                 accept=".txt,.pdf,.doc,.docx"
                             />
-                            <UploadIcon className="w-8 h-8 text-info-blue opacity-80 group-hover:scale-110 transition-transform" />
-                            <p className="text-sm font-bold text-white/50 transition-colors group-hover:text-white/80">
+                            <UploadIcon className="w-6 h-6 md:w-8 md:h-8 text-info-blue opacity-80 group-hover:scale-110 transition-transform" />
+                            <p className="text-xs md:text-sm font-bold text-white/50 transition-colors group-hover:text-white/80 text-center">
                                 {fileName
                                     ? `Selected: ${fileName}`
                                     : isQuestionBank
@@ -96,7 +98,7 @@ const FileDropZone: React.FC<{ onTextReady: (text: string) => void; mode: 'job_d
                         </div>
                         <button
                             onClick={(e) => { e.stopPropagation(); setIsPasting(true); }}
-                            className="w-full mt-3 text-[10px] font-black text-info-blue/40 hover:text-info-blue transition-colors uppercase tracking-[0.2em]"
+                            className="w-full mt-3 text-[9px] md:text-[10px] font-black text-info-blue/40 hover:text-info-blue transition-colors uppercase tracking-[0.2em]"
                         >
                             Or paste text manually
                         </button>
@@ -107,25 +109,25 @@ const FileDropZone: React.FC<{ onTextReady: (text: string) => void; mode: 'job_d
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="w-full bg-white/[0.02] border border-white/10 rounded-3xl p-6 space-y-4 shadow-inner"
+                        className="w-full bg-white/[0.02] border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-6 space-y-4 shadow-inner"
                     >
                         <textarea
                             value={pastedText}
                             onChange={(e) => setPastedText(e.target.value)}
                             placeholder={isQuestionBank ? "Paste your specific questions or study notes here..." : "Paste your Job Description or Resume content here..."}
-                            className="w-full h-40 bg-transparent text-sm text-text-primary placeholder:text-white/10 focus:outline-none resize-none font-sans leading-relaxed"
+                            className="w-full h-32 md:h-40 bg-transparent text-sm text-text-primary placeholder:text-white/10 focus:outline-none resize-none font-sans leading-relaxed"
                             autoFocus
                         />
-                        <div className="flex gap-4">
+                        <div className="flex gap-3 md:gap-4">
                             <button
                                 onClick={handlePasteSubmit}
-                                className="flex-1 bg-info-blue text-base-surface font-black py-3 rounded-xl text-[10px] uppercase tracking-widest"
+                                className="flex-1 bg-info-blue text-base-surface font-black py-4 md:py-3 rounded-xl text-[9px] md:text-[10px] uppercase tracking-widest"
                             >
                                 Confirm Text
                             </button>
                             <button
                                 onClick={() => setIsPasting(false)}
-                                className="px-6 text-[10px] font-black text-white/40 uppercase tracking-widest"
+                                className="px-4 md:px-6 text-[9px] md:text-[10px] font-black text-white/40 uppercase tracking-widest"
                             >
                                 Cancel
                             </button>
@@ -138,11 +140,12 @@ const FileDropZone: React.FC<{ onTextReady: (text: string) => void; mode: 'job_d
 };
 
 const SessionPrep: React.FC<SessionPrepProps> = ({ onContextReady, context, onGoBack }) => {
+    const isMobile = useIsMobile();
     const [isLoading, setIsLoading] = useState(true);
     const [isPlanReady, setIsPlanReady] = useState(false);
     const [plan, setPlan] = useState<InterviewPlan | null>(null);
     const [selectedPanelIDs, setSelectedPanelIDs] = useState<string[]>([]);
-    const [showCustomization, setShowCustomization] = useState(true);
+    const [showCustomization, setShowCustomization] = useState(false);
     const [sessionControls, setSessionControls] = useState<SessionControls>(defaultControls);
     const [currentContext, setCurrentContext] = useState(context);
     const [jdText, setJdText] = useState<string | null>(null);
@@ -211,40 +214,40 @@ const SessionPrep: React.FC<SessionPrepProps> = ({ onContextReady, context, onGo
     }
 
     return (
-        <div className="w-full max-w-4xl mx-auto py-8 px-6">
+        <div className="w-full max-w-4xl mx-auto py-4 md:py-8 px-4 md:px-6">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-[#0A192F]/80 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-10 md:p-14 shadow-[0_64px_128px_rgba(0,0,0,0.6)] flex flex-col items-center"
+                className="flex flex-col items-center"
             >
-                <div className="w-full mb-10">
+                <div className="w-full mb-8 md:mb-10">
                     <FileDropZone
                         onTextReady={setJdText}
                         mode={sessionControls.sourceMode}
                     />
                 </div>
 
-                <div className="w-full text-left mb-6 pl-4 border-l-2 border-action-teal/40">
-                    <h3 className="text-action-teal font-black text-xl uppercase tracking-widest leading-none">
+                <div className="w-full text-left mb-5 md:mb-6 pl-4 border-l-2 border-action-teal/40">
+                    <h3 className="text-action-teal font-black text-lg md:text-xl uppercase tracking-widest leading-none">
                         Your interview panel
                     </h3>
                     <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest opacity-40 mt-1.5">Selected experts for this rehearsal</p>
                 </div>
 
-                <div className="w-full mb-12">
+                <div className="w-full mb-10 md:mb-12">
                     <PanelSelector selectedPanelIDs={selectedPanelIDs} onSelectionChange={setSelectedPanelIDs} matchReasons={matchReasons} />
                 </div>
 
-                <div className="w-full bg-white/[0.02] border border-white/10 rounded-3xl mb-12 overflow-hidden transition-all">
+                <div className="w-full bg-white/[0.02] border border-white/10 rounded-2xl md:rounded-3xl mb-10 md:mb-12 overflow-hidden transition-all">
                     <button
                         onClick={() => { audioService.playConfirm(); setShowCustomization(!showCustomization); }}
-                        className="w-full px-10 py-8 flex justify-between items-center hover:bg-white/[0.02] border-b border-white/5"
+                        className="w-full px-6 md:px-10 py-6 md:py-8 flex justify-between items-center hover:bg-white/[0.02] border-b border-white/5"
                     >
-                        <div className="flex items-center gap-4">
-                            <div className="w-2.5 h-2.5 rounded-full bg-action-teal shadow-[0_0_8px_rgba(20,200,176,0.6)]" />
-                            <h4 className="text-white font-bold text-lg tracking-tight">Advanced parameters</h4>
+                        <div className="flex items-center gap-3 md:gap-4">
+                            <div className="w-2 md:w-2.5 h-2 md:h-2.5 rounded-full bg-action-teal shadow-[0_0_8px_rgba(20,200,176,0.6)]" />
+                            <h4 className="text-white font-bold text-base md:text-lg tracking-tight">Advanced parameters</h4>
                         </div>
-                        <span className={`text-info-blue text-xs transition-transform duration-300 ${showCustomization ? 'rotate-180' : 'rotate-90'}`}>▲</span>
+                        <span className={`text-info-blue text-[10px] md:text-xs transition-transform duration-300 ${showCustomization ? 'rotate-180' : 'rotate-90'}`}>▲</span>
                     </button>
                     <AnimatePresence initial={false}>
                         {showCustomization && (
@@ -252,7 +255,7 @@ const SessionPrep: React.FC<SessionPrepProps> = ({ onContextReady, context, onGo
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
-                                className="px-10 py-10"
+                                className="px-6 md:px-10 py-6 md:py-10"
                             >
                                 <SessionControlsEditor controls={sessionControls} onChange={setSessionControls} />
                             </motion.div>
@@ -260,19 +263,19 @@ const SessionPrep: React.FC<SessionPrepProps> = ({ onContextReady, context, onGo
                     </AnimatePresence>
                 </div>
 
-                <div className="w-full grid grid-cols-2 gap-8">
-                    <button
-                        onClick={onGoBack}
-                        className="bg-[#162741] text-white font-bold py-5 rounded-2xl hover:bg-[#1c3253] transition-all text-sm tracking-widest"
-                    >
-                        ← Change goal
-                    </button>
+                <div className="w-full flex flex-col md:grid md:grid-cols-2 gap-4 md:gap-8">
                     <button
                         onClick={handleGeneratePlan}
                         disabled={isLoading}
-                        className="bg-action-teal text-base-surface font-black py-5 rounded-2xl hover:bg-opacity-90 transition-all text-sm tracking-widest shadow-xl shadow-action-teal/20"
+                        className="w-full bg-action-teal text-base-surface font-black py-4 md:py-5 rounded-xl md:rounded-2xl hover:bg-opacity-90 transition-all text-[11px] md:text-sm tracking-widest shadow-xl shadow-action-teal/20 order-1 md:order-2"
                     >
                         {isLoading ? 'Synthesizing...' : 'Confirm & generate plan'}
+                    </button>
+                    <button
+                        onClick={onGoBack}
+                        className="w-full bg-[#162741] text-white/60 font-bold py-4 md:py-5 rounded-xl md:rounded-2xl hover:bg-[#1c3253] hover:text-white transition-all text-[10px] md:text-sm tracking-widest order-2 md:order-1"
+                    >
+                        Change goal
                     </button>
                 </div>
             </motion.div>
@@ -281,3 +284,4 @@ const SessionPrep: React.FC<SessionPrepProps> = ({ onContextReady, context, onGo
 };
 
 export default SessionPrep;
+

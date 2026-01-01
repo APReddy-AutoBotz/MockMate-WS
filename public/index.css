@@ -1,62 +1,306 @@
-/* PWA Mobile overrides (applies only when index.tsx sets html.pwa-mobile) */
+/* ============================================
+   MOBILE-FIRST PWA OPTIMIZATIONS
+   Applies on mobile devices and installed PWAs
+   ============================================ */
 
-html.pwa-mobile body.bg-executive {
+/* Override for PWA standalone mode */
+html.pwa-mobile,
+html.pwa-mobile body {
   background-attachment: scroll !important;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
+
+/* Safe area support for notched devices */
+html.pwa-mobile body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* ============================================
+   FLATTEN NESTED CONTAINERS - Remove glassmorphic effects
+   ============================================ */
 
 html.pwa-mobile .glass-premium {
-  background: rgba(10, 25, 47, 0.35) !important;
-  backdrop-filter: none !important;
-  border-color: transparent !important;
-}
-
-/* Flatten the repeated "glass" wrappers across the app (PWA mobile only)
-   We target elements that use both backdrop blur + borders/shadows which are the main cause of nested boxes. */
-html.pwa-mobile [class*="backdrop-blur"][class*="border"],
-html.pwa-mobile [class*="backdrop-blur"][class*="shadow"],
-html.pwa-mobile [class*="glass"][class*="border"],
-html.pwa-mobile [class*="glass"][class*="shadow"] {
+  background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  border-color: transparent !important;
   box-shadow: none !important;
 }
 
-/* Remove container borders that create the "nested frame" look */
-html.pwa-mobile [class*="border-white/"] {
+@media (max-width: 768px) {
+  .glass-premium {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Remove backdrop blur from ALL elements */
+html.pwa-mobile [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+@media (max-width: 768px) {
+  [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Remove all box shadows */
+html.pwa-mobile [class*="shadow"] {
+  box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+  [class*="shadow-"] {
+    box-shadow: none !important;
+  }
+}
+
+/* Flatten borders on containers */
+html.pwa-mobile [class*="border-white/"],
+html.pwa-mobile [class*="border-gray"] {
   border-color: transparent !important;
 }
 
-/* Reduce large rounding used on cards/panels; keep small rounding for buttons/inputs */
-html.pwa-mobile [class*="rounded-3xl"],
-html.pwa-mobile [class*="rounded-[2"],
-html.pwa-mobile [class*="rounded-[2."],
-html.pwa-mobile [class*="rounded-[2rem"],
-html.pwa-mobile [class*="rounded-[2.5rem"],
-html.pwa-mobile [class*="rounded-[3rem"],
-html.pwa-mobile [class*="rounded-[2.5"],
-html.pwa-mobile [class*="rounded-[2.0"],
-html.pwa-mobile [class*="rounded-2xl"] {
-  border-radius: 12px !important;
+@media (max-width: 768px) {
+
+  [class*="border-white/"],
+  [class*="border-gray"] {
+    border-color: transparent !important;
+  }
 }
 
-/* Tone down big card paddings to reduce the "panel inside panel" feeling */
+/* Keep functional borders (buttons, inputs) */
+html.pwa-mobile button[class*="border"],
+html.pwa-mobile input[class*="border"],
+html.pwa-mobile select[class*="border"] {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+@media (max-width: 768px) {
+
+  button[class*="border"],
+  input[class*="border"],
+  select[class*="border"] {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+}
+
+/* ============================================
+   OPTIMIZE SPACING & SIZING
+   ============================================ */
+
+/* Reduce excessive padding */
 html.pwa-mobile [class*="p-10"],
 html.pwa-mobile [class*="p-12"],
 html.pwa-mobile [class*="p-14"],
+html.pwa-mobile [class*="p-16"] {
+  padding: 1rem !important;
+}
+
+@media (max-width: 768px) {
+
+  [class*="p-10"],
+  [class*="p-12"],
+  [class*="p-14"],
+  [class*="p-16"] {
+    padding: 1rem !important;
+  }
+}
+
 html.pwa-mobile [class*="px-10"],
-html.pwa-mobile [class*="py-10"] {
-  padding: 16px !important;
+html.pwa-mobile [class*="px-12"] {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
 }
 
-/* Hide decorative border overlays used inside glass cards */
-html.pwa-mobile [class*="pointer-events-none"][class*="border"],
-html.pwa-mobile [class*="pointer-events-none"][class*="rounded"] {
-  border-color: transparent !important;
-  box-shadow: none !important;
+@media (max-width: 768px) {
+
+  [class*="px-10"],
+  [class*="px-12"] {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+html.pwa-mobile [class*="py-10"],
+html.pwa-mobile [class*="py-12"] {
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+}
+
+@media (max-width: 768px) {
+
+  [class*="py-10"],
+  [class*="py-12"] {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+}
+
+/* Reduce large border radius */
+html.pwa-mobile [class*="rounded-3xl"],
+html.pwa-mobile [class*="rounded-2xl"],
+html.pwa-mobile [class*="rounded-[2"],
+html.pwa-mobile [class*="rounded-[3"] {
+  border-radius: 1rem !important;
+}
+
+@media (max-width: 768px) {
+
+  [class*="rounded-3xl"],
+  [class*="rounded-2xl"],
+  [class*="rounded-[2"],
+  [class*="rounded-[3"] {
+    border-radius: 1rem !important;
+  }
+}
+
+/* ============================================
+   TOUCH OPTIMIZATION - Minimum 48px targets
+   ============================================ */
+
+html.pwa-mobile button,
+html.pwa-mobile a,
+html.pwa-mobile [role="button"] {
+  min-height: 48px;
+  min-width: 48px;
+  touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+
+  button,
+  a,
+  [role="button"] {
+    min-height: 48px;
+    min-width: 48px;
+    touch-action: manipulation;
+  }
+}
+
+/* Input fields */
+html.pwa-mobile input,
+html.pwa-mobile textarea,
+html.pwa-mobile select {
+  min-height: 48px;
+  font-size: 16px !important;
+  /* Prevents zoom on iOS */
+}
+
+@media (max-width: 768px) {
+
+  input,
+  textarea,
+  select {
+    min-height: 48px;
+    font-size: 16px !important;
+  }
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* Use GPU acceleration for animations */
+html.pwa-mobile [class*="transition"] {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+@media (max-width: 768px) {
+  [class*="transition"] {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+}
+
+/* Hide decorative elements on mobile */
+html.pwa-mobile [class*="pointer-events-none"][class*="absolute"]:not(.animate-pulse) {
   opacity: 0 !important;
+  pointer-events: none;
 }
 
-/* Ensure the main root uses full width on small screens */
+@media (max-width: 768px) {
+  [class*="pointer-events-none"][class*="absolute"]:not(.animate-pulse) {
+    opacity: 0 !important;
+    pointer-events: none;
+  }
+}
+
+/* ============================================
+   ROOT & LAYOUT
+   ============================================ */
+
 html.pwa-mobile #root {
   width: 100% !important;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+@media (max-width: 768px) {
+  #root {
+    width: 100% !important;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+}
+
+/* Full viewport on mobile */
+html.pwa-mobile,
+html.pwa-mobile html,
+html.pwa-mobile body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+
+  html,
+  body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+}
+
+/* ============================================
+   DISABLE PROBLEMATIC EFFECTS
+   ============================================ */
+
+/* Disable blur backgrounds (performance) */
+html.pwa-mobile [class*="blur-"]:not([class*="backdrop-blur"]) {
+  filter: none !important;
+}
+
+@media (max-width: 768px) {
+  [class*="blur-"]:not([class*="backdrop-blur"]) {
+    filter: none !important;
+  }
+}
+
+/* Simplify gradients on low-power devices */
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  [class*="gradient"] {
+    background: #0A192F !important;
+  }
 }

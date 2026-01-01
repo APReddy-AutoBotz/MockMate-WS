@@ -7,7 +7,8 @@ import { ToastProvider } from './contexts/ToastContext';
 import MockSession from './components/MockSession';
 import SessionPrep from './components/SessionPrep';
 import RoleCapture from './components/RoleCapture';
-import GlassCard from './utils/GlassCard';
+import AppContainer from './components/AppContainer';
+import SplashScreen from './components/SplashScreen';
 import InterviewReport from './components/InterviewReport';
 import InterviewOrbit from './components/InterviewOrbit';
 import { FinalReport, SessionContext, UserProfile } from './types';
@@ -25,10 +26,11 @@ const LazyGrowthDashboard = React.lazy(() => import('./components/GrowthDashboar
 const LazyInterviewReport = React.lazy(() => import('./components/InterviewReport'));
 const LazyMockSession = React.lazy(() => import('./components/MockSession'));
 
-type AppState = 'LOADING' | 'LANDING' | 'LOGIN' | 'ONBOARDING' | 'ROLE_SELECTION' | 'CONTEXT_UPLOAD' | 'SESSION_ACTIVE' | 'REPORT_VIEW' | 'HISTORY_VIEW';
+type AppState = 'SPLASH' | 'LOADING' | 'LANDING' | 'LOGIN' | 'ONBOARDING' | 'ROLE_SELECTION' | 'CONTEXT_UPLOAD' | 'SESSION_ACTIVE' | 'REPORT_VIEW' | 'HISTORY_VIEW';
 
 const App: React.FC = () => {
-    const [appState, setAppState] = useState<AppState>('LOADING');
+    const [appState, setAppState] = useState<AppState>('SPLASH');
+    const [showSplash, setShowSplash] = useState(true);
     const [sessionContext, setSessionContext] = useState<SessionContext | null>(null);
     const [finalReport, setFinalReport] = useState<FinalReport | null>(null);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -52,6 +54,14 @@ const App: React.FC = () => {
         });
         return () => unsubscribe();
     }, []);
+
+    const handleSplashComplete = () => {
+        setShowSplash(false);
+        // If appState was SPLASH, the useEffect with auth listener should have already
+        // determined if we move to LANDING, ROLE_SELECTION etc.
+        // If it's still SPLASH, it means auth check isn't done, so we wait or default to LOADING/LANDING.
+        if (appState === 'SPLASH') setAppState('LOADING');
+    };
 
     const handleGetStarted = () => {
         audioService.playConfirm();
@@ -211,7 +221,7 @@ const App: React.FC = () => {
             case 'ROLE_SELECTION':
                 return (
                     <motion.div key="role" {...pageAnimation} className="w-full max-w-2xl px-4">
-                        <GlassCard>
+                        <AppContainer>
                             <ErrorBoundary>
                                 <RoleCapture
                                     userProfile={userProfile}
@@ -220,7 +230,7 @@ const App: React.FC = () => {
                                     onViewHistory={toggleHistory}
                                 />
                             </ErrorBoundary>
-                        </GlassCard>
+                        </AppContainer>
                     </motion.div>
                 );
             case 'HISTORY_VIEW':
@@ -246,7 +256,7 @@ const App: React.FC = () => {
             case 'CONTEXT_UPLOAD':
                 return (
                     <motion.div key="context" {...pageAnimation} className="w-full max-w-3xl px-4">
-                        <GlassCard>
+                        <AppContainer>
                             <ErrorBoundary>
                                 <SessionPrep
                                     onContextReady={handleContextReady}
@@ -254,7 +264,7 @@ const App: React.FC = () => {
                                     onGoBack={handleGoBack}
                                 />
                             </ErrorBoundary>
-                        </GlassCard>
+                        </AppContainer>
                     </motion.div>
                 );
             case 'SESSION_ACTIVE':
@@ -302,32 +312,40 @@ const App: React.FC = () => {
         <ErrorBoundary>
             <ToastProvider>
                 <div className="min-h-screen w-full flex flex-col">
-                    {showAppHeader && (
-                        <motion.header {...headerAnimation} className="absolute top-0 left-0 w-full px-4 sm:px-12 py-6 sm:py-10 flex justify-between items-center z-20 pointer-events-none">
-                            <div onClick={handleRestart} className="cursor-pointer transition-transform hover:scale-[1.02] pointer-events-auto">
-                                <Logo className="h-12 w-auto sm:h-16" />
-                            </div>
-                            <div className="flex items-center gap-4 sm:gap-8 pointer-events-auto">
-                                <button
-                                    onClick={toggleHistory}
-                                    className="text-[9px] sm:text-[11px] font-bold text-text-secondary hover:text-info-blue uppercase tracking-widest transition-colors"
-                                >
-                                    Journal
-                                </button>
-                                <button
-                                    onClick={handleLogout}
-                                    className="text-[8px] sm:text-[10px] font-bold bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg sm:rounded-xl px-3 sm:px-6 py-2 sm:py-3 transition-all backdrop-blur-md uppercase tracking-widest"
-                                >
-                                    End Session
-                                </button>
-                            </div>
-                        </motion.header>
+                    <AnimatePresence>
+                        {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+                    </AnimatePresence>
+
+                    {showSplash ? null : (
+                        <>
+                            {showAppHeader && (
+                                <motion.header {...headerAnimation} className="absolute top-0 left-0 w-full px-4 sm:px-12 py-6 sm:py-10 flex justify-between items-center z-20 pointer-events-none">
+                                    <div onClick={handleRestart} className="cursor-pointer transition-transform hover:scale-[1.02] pointer-events-auto">
+                                        <Logo className="h-12 w-auto sm:h-16" />
+                                    </div>
+                                    <div className="flex items-center gap-4 sm:gap-8 pointer-events-auto">
+                                        <button
+                                            onClick={toggleHistory}
+                                            className="text-[9px] sm:text-[11px] font-bold text-text-secondary hover:text-info-blue uppercase tracking-widest transition-colors"
+                                        >
+                                            Journal
+                                        </button>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="text-[8px] sm:text-[10px] font-bold bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg sm:rounded-xl px-3 sm:px-6 py-2 sm:py-3 transition-all backdrop-blur-md uppercase tracking-widest"
+                                        >
+                                            End Session
+                                        </button>
+                                    </div>
+                                </motion.header>
+                            )}
+                            <main className="flex-grow w-full flex flex-col items-center justify-center p-2 sm:p-4 relative z-10 overflow-hidden">
+                                <AnimatePresence mode="wait">
+                                    {renderPageContent()}
+                                </AnimatePresence>
+                            </main>
+                        </>
                     )}
-                    <main className="flex-grow w-full flex flex-col items-center justify-center p-2 sm:p-4 relative z-10 overflow-hidden">
-                        <AnimatePresence mode="wait">
-                            {renderPageContent()}
-                        </AnimatePresence>
-                    </main>
                 </div>
             </ToastProvider>
         </ErrorBoundary>
