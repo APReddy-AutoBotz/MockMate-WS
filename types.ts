@@ -155,6 +155,13 @@ export interface CoachPack {
     micro_drills: MicroDrill[];
 }
 
+export interface PrioritizedAction {
+    title: string;
+    impact: 'high' | 'medium' | 'low';
+    timeEstimate: string;
+    exercise: string;
+}
+
 export interface FinalReport {
     overallSummary: string;
     jdInsights: JDInsights;
@@ -173,6 +180,14 @@ export interface FinalReport {
         consequence?: string;
         mitigation?: string;
     };
+
+    // Simplified Report Fields (for user-friendly display)
+    simplifiedScore?: number; // 0-100 overall score
+    topStrength?: string; // Single biggest strength
+    topWeakness?: string; // Single biggest gap
+    estimatedSessionsToReady?: number; // e.g., 2-3 sessions
+    quickWins?: string[]; // 2-3 easy improvements
+    prioritizedActions?: PrioritizedAction[]; // Ranked by impact
 }
 
 export interface InterviewTurn {

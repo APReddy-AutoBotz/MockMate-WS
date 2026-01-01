@@ -9,7 +9,7 @@ import SessionPrep from './components/SessionPrep';
 import RoleCapture from './components/RoleCapture';
 import AppContainer from './components/AppContainer';
 import SplashScreen from './components/SplashScreen';
-import InterviewReport from './components/InterviewReport';
+import SimplifiedReport from './components/SimplifiedReport';
 import InterviewOrbit from './components/InterviewOrbit';
 import { FinalReport, SessionContext, UserProfile } from './types';
 import { Logo } from './components/icons/Logo';
@@ -23,7 +23,7 @@ import { auth, signOut } from './services/firebaseClient';
 
 // Lazy load heavy components
 const LazyGrowthDashboard = React.lazy(() => import('./components/GrowthDashboard'));
-const LazyInterviewReport = React.lazy(() => import('./components/InterviewReport'));
+const LazySimplifiedReport = React.lazy(() => import('./components/SimplifiedReport'));
 const LazyMockSession = React.lazy(() => import('./components/MockSession'));
 
 type AppState = 'SPLASH' | 'LOADING' | 'LANDING' | 'LOGIN' | 'ONBOARDING' | 'ROLE_SELECTION' | 'CONTEXT_UPLOAD' | 'SESSION_ACTIVE' | 'REPORT_VIEW' | 'HISTORY_VIEW';
@@ -295,7 +295,7 @@ const App: React.FC = () => {
                             </div>
                         }>
                             <ErrorBoundary>
-                                {finalReport && <LazyInterviewReport report={finalReport} onRestart={handleRestart} />}
+                                {finalReport && <LazySimplifiedReport report={finalReport} onRestart={handleRestart} />}
                             </ErrorBoundary>
                         </Suspense>
                     </motion.div>
