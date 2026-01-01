@@ -1,0 +1,51 @@
+feat: Add live ideal answer feedback during interview sessions
+
+Major UX Enhancement:
+- Show ideal/mastery responses immediately after answering each question
+- Users now learn in real-time, not just at the end
+- Implements "feedback_shown" phase in MockSession flow
+
+New Features:
+1. Live Ideal Answer Display:
+   - Appears after user confirms their answer
+   - Shows user's answer summary + AI-generated ideal response
+   - Beautiful green-themed card with ⭐ indicator
+   -Loading state while generating
+   - Mobile-responsive design
+
+2. New AI Function - generateIdealAnswer():
+   - Takes question, blueprint, and user answer as input
+   - Generates contextual ideal response (2-4 sentences)
+   - Uses expected signals from question blueprint
+   - Returns STAR-formatted answers for behavioral questions
+   - Includes specific metrics and best practices
+   - Temperature 0.6 for natural, conversational tone
+
+Implementation Details:
+- Added 'feedback_shown' to SessionPhase type
+- New state: idealAnswer, isGeneratingIdeal
+- Modified handleConfirmTranscript to generate ideal answer
+- New handleProceedAfterFeedback to proceed after viewing
+- Export generateIdealAnswer in mockGeminiService
+
+UI/UX:
+- Clean comparison: User's answer vs Ideal answer
+- "Learn From The Best" heading
+- Helpful tip: "Notice the specific details, metrics..."
+- Continue button (disabled while generating)
+- Smooth animations with Framer Motion
+
+Files Modified:
+- components/MockSession.tsx (+60 lines UI, +state management)
+- services/mockGeminiService.ts (+48 lines generateIdealAnswer function)
+
+Learning Benefits:
+- Real-time learning loop (answer → see ideal → improve)
+- Reduces guesswork about what "good" looks like
+- Builds muscle memory for structured responses
+- More engaging than reading PDF report later
+
+Monetization Ready:
+- This feature can be made premium later
+- Currently free to build user habit
+- Easy to gate behind subscription check

@@ -565,6 +565,50 @@ Return ONLY the hint text, no intro.`;
     }
 };
 
+export const generateIdealAnswer = async (
+    question: string,
+    blueprint: QuestionBlueprint | null,
+    userAnswer: string
+): Promise<string> => {
+    const expectedSignals = blueprint?.expectedSignals || [];
+    const competency = blueprint?.phase || 'Professional Communication';
+
+    const prompt = `You are a senior interview coach. A candidate just answered this interview question:
+
+QUESTION: "${question}"
+COMPETENCY TESTED: ${competency}
+EXPECTED SIGNALS: ${JSON.stringify(expectedSignals)}
+
+CANDIDATE'S ANSWER: "${userAnswer}"
+
+TASK: Generate an IDEAL, HIGH-BAR response (2-4 sentences) that would impress interviewers. This should:
+1. Demonstrate the competency being tested
+2. Hit the expected signals
+3. Use the STAR method if behavioral
+4. Include specific metrics/numbers where possible
+5. Sound natural and conversational (not robotic)
+
+Return ONLY the ideal response text, no intro or framing. Make it inspirational and actionable.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.0-flash-exp',
+            contents: [{ parts: [{ text: prompt }] }],
+            config: {
+                temperature: 0.6,
+                maxOutputTokens: 300
+            }
+        });
+
+        const idealResponse = getResponseText(response).trim();
+        return idealResponse || '✨ A strong answer would include specific examples with measurable results and demonstrate clear impact.';
+
+    } catch (error) {
+        console.error('Ideal answer generation failed:', error);
+        return '✨ Keep practicing! Focus on being specific, using numbers, and showing clear outcomes.';
+    }
+};
+
 // Helper to convert Blob to Base64
 const blobToBase64 = (blob: Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -828,5 +872,6 @@ export default {
     simulateExecution,
     getHintForQuestion,
     transcribeAudio,
-    generateFinalReport
+    generateFinalReport,
+    generateIdealAnswer
 };

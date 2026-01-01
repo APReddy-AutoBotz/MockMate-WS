@@ -18,7 +18,7 @@ interface MockSessionProps {
     onCancel: () => void;
 }
 
-type SessionPhase = 'loading_question' | 'asking' | 'thinking' | 'reviewing' | 'confirm_exit' | 'confirm_skip' | 'generating_report';
+type SessionPhase = 'loading_question' | 'asking' | 'thinking' | 'reviewing' | 'feedback_shown' | 'confirm_exit' | 'confirm_skip' | 'generating_report';
 
 const MockSession: React.FC<MockSessionProps> = ({ sessionContext, onReportGenerated, onCancel }) => {
     const isMobile = useIsMobile();
@@ -32,6 +32,8 @@ const MockSession: React.FC<MockSessionProps> = ({ sessionContext, onReportGener
     const [isAnalyzingCode, setIsAnalyzingCode] = useState(false);
     const [hint, setHint] = useState<string | null>(null);
     const [isHintLoading, setIsHintLoading] = useState(false);
+    const [idealAnswer, setIdealAnswer] = useState<string | null>(null);
+    const [isGeneratingIdeal, setIsGeneratingIdeal] = useState(false);
     const [localContext, setLocalContext] = useState(sessionContext);
 
     const sessionHistory = useRef<InterviewTurn[]>([]);
@@ -105,9 +107,33 @@ const MockSession: React.FC<MockSessionProps> = ({ sessionContext, onReportGener
         }
     };
 
-    const handleConfirmTranscript = () => {
+    const handleConfirmTranscript = async () => {
         if (!currentQuestion || !currentPersonaId || !lastTranscript) return;
         audioService.playConfirm();
+
+        // Set phase to feedback_shown and generate ideal answer
+        setSessionPhase('feedback_shown');
+        setIsGeneratingIdeal(true);
+
+        // Generate ideal answer using AI
+        try {
+            const idealResponse = await mockGeminiService.generateIdealAnswer(
+                currentQuestion,
+                currentBlueprint,
+                lastTranscript
+            );
+            setIdealAnswer(idealResponse);
+        } catch (error) {
+            console.error('Failed to generate ideal answer:', error);
+            setIdealAnswer('✨ Keep practicing! A strong answer would include specific examples with measurable results.');
+        } finally {
+            setIsGeneratingIdeal(false);
+        }
+    };
+
+    const handleProceedAfterFeedback = () => {
+        if (!currentQuestion || !currentPersonaId || !lastTranscript) return;
+
         const persona = PERSONAS_CONFIG.find(p => p.id === currentPersonaId) || PERSONAS_CONFIG[0];
         sessionHistory.current.push({
             interviewer: `${persona.name} — ${persona.title}`,
@@ -116,6 +142,9 @@ const MockSession: React.FC<MockSessionProps> = ({ sessionContext, onReportGener
             questionBlueprint: currentBlueprint ?? undefined,
             codeFeedback: codeFeedback || undefined
         });
+
+        // Reset for next question
+        setIdealAnswer(null);
         handleProceedToNextQuestion();
     };
 
@@ -298,6 +327,57 @@ const MockSession: React.FC<MockSessionProps> = ({ sessionContext, onReportGener
                                     <button onClick={handleConfirmTranscript} className="w-full md:w-auto bg-action-teal text-base-surface font-black py-4 md:py-5 px-12 rounded-xl md:rounded-2xl text-[11px] uppercase tracking-[.2em] shadow-2xl shadow-action-teal/20 transition-transform active:scale-95 order-1 md:order-2">Submit</button>
                                     <button onClick={handleReRecord} className="w-full md:w-auto bg-white/5 text-text-primary px-12 py-4 md:py-5 rounded-xl md:rounded-2xl border border-white/10 text-[11px] uppercase tracking-[.2em] hover:bg-white/10 transition-all order-2 md:order-1">Edit</button>
                                 </div>
+                            </div>
+                        </motion.div>
+                    ) : sessionPhase === 'feedback_shown' ? (
+                        <motion.div key="feedback" className="absolute inset-0 flex items-center justify-center bg-[#010912]/98 backdrop-blur-3xl z-50 p-4 overflow-y-auto">
+                            <div className="w-full max-w-2xl text-center space-y-6 md:space-y-8 py-8">
+                                <div className="space-y-2">
+                                    <span className="text-[10px] md:text-xs font-black text-action-teal uppercase tracking-[0.4em] inline-block">💡 Learn From The Best</span>
+                                    <h3 className="text-xl md:text-2xl font-bold text-white">Here's How Top Performers Answer</h3>
+                                </div>
+
+                                {/* User's Answer (Summary) */}
+                                <div className="bg-white/[0.02] border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-6 text-left">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <span className="text-[8px] md:text-[10px] font-black text-white/40 uppercase tracking-widest">Your Answer</span>
+                                    </div>
+                                    <p className="text-sm md:text-base text-white/60 line-clamp-3 italic">"{lastTranscript?.substring(0, 150)}{lastTranscript && lastTranscript.length > 150 ? '...' : ''}"</p>
+                                </div>
+
+                                {/* Ideal Answer */}
+                                {isGeneratingIdeal ? (
+                                    <div className="bg-green-500/5 border border-green-500/20 rounded-xl md:rounded-2xl p-6 md:p-8">
+                                        <div className="flex flex-col items-center gap-4">
+                                            <LoadingSpinner />
+                                            <p className="text-xs md:text-sm text-green-400 font-medium">Creating ideal response...</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-green-500/5 border-2 border-green-500/30 rounded-xl md:rounded-3xl p-6 md:p-8 text-left shadow-2xl shadow-green-500/5">
+                                        <div className="flex items-center gap-2 md:gap-3 mb-4">
+                                            <span className="text-lg md:text-xl">⭐</span>
+                                            <span className="text-[9px] md:text-[11px] font-black text-green-400 uppercase tracking-widest">Ideal Mastery Response</span>
+                                        </div>
+                                        <p className="text-base md:text-lg text-white font-medium leading-relaxed italic">
+                                            "{idealAnswer}"
+                                        </p>
+                                        <div className="mt-6 pt-4 border-t border-green-500/10">
+                                            <p className="text-[10px] md:text-xs text-green-400/60 font-medium">
+                                                💡 Notice the specific details, metrics, and structured approach in this response
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Continue Button */}
+                                <button
+                                    onClick={handleProceedAfterFeedback}
+                                    disabled={isGeneratingIdeal}
+                                    className="w-full md:w-auto bg-action-teal hover:bg-action-teal/90 disabled:bg-white/5 text-base-surface disabled:text-white/40 font-black py-5 md:py-6 px-16 rounded-xl md:rounded-2xl text-xs md:text-sm uppercase tracking-[.2em] shadow-2xl shadow-action-teal/20 transition-all active:scale-95 disabled:cursor-not-allowed"
+                                >
+                                    {isGeneratingIdeal ? 'Please Wait...' : 'Continue to Next Question →'}
+                                </button>
                             </div>
                         </motion.div>
                     ) : (
