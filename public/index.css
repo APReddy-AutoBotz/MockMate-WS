@@ -304,3 +304,17 @@ html.pwa-mobile [class*="blur-"]:not([class*="backdrop-blur"]) {
     background: #0A192F !important;
   }
 }
+
+/* ============================================
+   CINEMATIC SPLASH SCREEN ANIMATIONS
+   ============================================ */
+
+@keyframes gridSlide {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(50px);
+  }
+}
