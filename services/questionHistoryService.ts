@@ -5,7 +5,7 @@ export interface QuestionRecord {
 }
 
 const STORAGE_KEY = 'mockmate_question_history';
-const HISTORY_WINDOW_DAYS = 10;
+const HISTORY_WINDOW_DAYS = 15;
 
 // Simple string hash for basic deduplication
 const hashString = (str: string): string => {

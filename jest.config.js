@@ -1,7 +1,7 @@
 export default {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
   transform: {
@@ -27,5 +27,9 @@ export default {
   testMatch: [
     '<rootDir>/**/__tests__/**/*.{ts,tsx}',
     '<rootDir>/**/*.{test,spec}.{ts,tsx}',
+  ],
+  testPathIgnorePatterns: [
+    '<rootDir>/tests/e2e/',
+    '<rootDir>/backend/',
   ],
 };

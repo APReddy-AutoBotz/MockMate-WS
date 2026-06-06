@@ -1,52 +1,35 @@
 import React from 'react';
-import { useIsMobile, useIsPWA } from '../hooks/useIsMobile';
 
 interface AppContainerProps {
     children: React.ReactNode;
     className?: string;
-    removeGlass?: boolean; // Explicitly remove glass effects
-    noPadding?: boolean;   // Remove default padding
+    mode?: 'dark' | 'light';
+    removeGlass?: boolean;
+    noPadding?: boolean;
 }
 
 /**
- * Mobile-optimized container that automatically flattens nested glass effects
- * and provides app-like spacing on mobile devices
+ * Design system compliant container that supports surface modes
+ * and applies the standard card design rules.
  */
 const AppContainer: React.FC<AppContainerProps> = ({
     children,
     className = '',
-    removeGlass = false,
+    mode = 'dark',
     noPadding = false
 }) => {
-    const isMobile = useIsMobile();
-    const isPWA = useIsPWA();
+    const baseClasses = mode === 'dark'
+        ? 'border-[0.5px] border-white/10 bg-brand-dark/95 rounded-[22px] sm:rounded-[28px] lg:rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl'
+        : 'border-[0.5px] border-white/20 bg-white/95 rounded-[22px] sm:rounded-[28px] lg:rounded-[32px] shadow-xl backdrop-blur-2xl';
 
-    // On mobile, we flatten the design - no glass, minimal borders
-    const baseClasses = isMobile || isPWA
-        ? 'bg-transparent' // No background on mobile
-        : 'bg-[#0A192F]/40 backdrop-blur-2xl border border-white/5'; // Glass on desktop
-
-    // Apply glass removal override if specified
-    const glassClasses = removeGlass
-        ? 'bg-transparent border-0'
-        : baseClasses;
-
-    // Padding: mobile gets minimal, desktop gets generous
-    const paddingClasses = noPadding
-        ? ''
-        : isMobile || isPWA
-            ? 'p-4'
-            : 'p-8 md:p-12';
-
-    // Rounding: less aggressive on mobile
-    const roundingClasses = isMobile || isPWA ? 'rounded-xl' : 'rounded-[2.5rem]';
+    const paddingClasses = noPadding ? '' : 'p-3 sm:p-5 lg:p-[1.25rem]';
 
     return (
         <div
             className={`
-                ${glassClasses} 
-                ${paddingClasses} 
-                ${roundingClasses} 
+                ${mode === 'light' ? 'mode-light' : 'mode-dark'}
+                ${baseClasses}
+                ${paddingClasses}
                 transition-all duration-300
                 ${className}
             `.trim()}

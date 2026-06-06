@@ -7,6 +7,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
+import { isSupabaseConfigured } from './supabaseAdmin';
 
 // ---- tiny in-memory rate limiter (no external deps) ----
 type Bucket = { tokens: number; ts: number };
@@ -31,19 +32,33 @@ function rateLimitSimple({ max = 20, windowMs = 60_000 }: { max?: number; window
 const httpFetch: typeof fetch = (global as any).fetch
   ? (global as any).fetch
   : (async (...args: any[]) => {
-      const mod = await import('node-fetch');
-      // @ts-ignore
-      return mod.default(...args);
-    }) as any;
+    const mod = await import('node-fetch');
+    // @ts-ignore
+    return mod.default(...args);
+  }) as any;
 
 // ---- app init ----
-const app = express();
+export const app = express();
+export function createApp() {
+  return app;
+}
 const PORT = Number(process.env.PORT ?? 3001);
 
-// CORS allow-list (comma separated)
-const allow =
-  (process.env.ALLOWED_ORIGINS?.split(',').map(s => s.trim()).filter(Boolean)) ||
-  ['http://localhost:5173'];
+// CORS allow-list (comma separated). Local defaults cover Vite's common ports.
+const configuredAllowedOrigins = process.env.ALLOWED_ORIGINS
+  ?.split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+const allow = configuredAllowedOrigins?.length
+  ? configuredAllowedOrigins
+  : [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:4173',
+    'http://127.0.0.1:4173',
+  ];
 
 app.use(
   cors({
@@ -62,7 +77,16 @@ app.use(express.json({ limit: '2mb' }));
 app.use(morgan('dev'));
 
 // ---------- Health ----------
-app.get('/api/health', (_req, res) => res.json({ ok: true, ts: new Date().toISOString() }));
+app.get('/api/health', (_req, res) => res.json({
+  ok: true,
+  ts: new Date().toISOString(),
+  services: {
+    supabase: isSupabaseConfigured,
+    gemini: Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY),
+    groq: Boolean(process.env.GROQ_API_KEY),
+    devAuth: process.env.NODE_ENV === 'development' && process.env.ENABLE_DEV_AUTH === 'true',
+  },
+}));
 
 // ---------- Gemini Live: Ephemeral token ----------
 const liveTokenLimiter = rateLimitSimple({ max: 20, windowMs: 60_000 });
@@ -93,15 +117,44 @@ app.post('/ephemeral-token', liveTokenLimiter, async (_req: Request, res: Respon
   }
 });
 
+// ---------- Auth Middleware & Test Route ----------
+import { verifyAuthToken } from './middleware/authMiddleware';
+
+app.get('/api/auth/test', verifyAuthToken, (req, res) => {
+  res.json({ message: 'Authenticated successfully', user: (req as any).user });
+});
+
 // ---------- Optional: mount your existing routes if present ----------
 try {
   // If you have backend/routes/index.ts exporting a router as default
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const routes = require('./routes').default || require('./routes/index').default;
-  app.use('/api', routes);
-  console.log('Mounted existing routes under /api');
-} catch {
+  const aiRoutes = require('./routes/aiRoutes').default;
+  const userRoutes = require('./routes/userRoutes').default;
+  const resumeRoutes = require('./routes/resumeRoutes').default;
+  const meRoutes = require('./routes/meRoutes').default;
+  const interviewRoutes = require('./routes/interviewRoutes').default;
+  const adminRoutes = require('./routes/adminRoutes').default;
+
+  app.use('/api/ai', aiRoutes);
+  app.use('/api/user', userRoutes);
+  app.use('/api/resume', resumeRoutes);
+  app.use('/api/me', meRoutes);
+  app.use('/api/interview', interviewRoutes);
+  app.use('/api/admin', adminRoutes);
+  console.log('Mounted AI, User, Resume, Interview, Me, and Admin routes');
+} catch (e) {
+  console.error("Failed to mount routes", e);
   // No custom routes found — ignore
+}
+
+// ---------- ClearSpeak routes ----------
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const clearSpeakRoutes = require('./clearspeak/routes').default;
+  app.use('/api/clearspeak', clearSpeakRoutes);
+  console.log('Mounted ClearSpeak routes at /api/clearspeak');
+} catch (e) {
+  console.error('Failed to mount ClearSpeak routes', e);
 }
 
 // ---------- Optional: Swagger at /api-docs if you have swagger deps ----------
@@ -135,10 +188,13 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: 'Server Error' });
 });
 
-// ---------- start ----------
-app.listen(PORT, () => {
-  console.log(`MockMate backend running on http://localhost:${PORT}`);
-  console.log('Health:         GET  /api/health');
-  console.log('Live token:     POST /ephemeral-token');
-  console.log('Docs (optional):     /api-docs');
-});
+export function startServer(port = PORT) {
+  return app.listen(port, () => {
+    console.log(`MockMate backend running on http://localhost:${port}`);
+    console.log('Health:         GET  /api/health');
+    console.log('Live token:     POST /ephemeral-token');
+    console.log('Docs (optional):     /api-docs');
+  });
+}
+
+export default app;

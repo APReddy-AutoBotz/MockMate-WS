@@ -3,8 +3,23 @@ export interface UserProfile {
     name: string;
     experienceLevel: 'entry' | 'mid' | 'senior' | 'lead';
     primaryGoal: 'specific_interview' | 'skill_building' | 'career_change';
+    targetRole?: string;   // Shared across Resume, Speak, and Interview modules
     companyName?: string;
     companyUrl?: string;
+    pilot_user?: boolean;
+}
+
+export interface PilotFeedback {
+    ratings: {
+        fairness: number;
+        replayUsefulness: number;
+        auditAccuracy: number;
+        coachingUsefulness: number;
+    };
+    issues: string[];
+    openText: string;
+    timestamp: string;
+    updatedAt?: string;
 }
 
 export interface SessionContext {
@@ -19,6 +34,8 @@ export interface SessionContext {
     companyName?: string;
     companyUrl?: string;
     companyBrief?: string;
+    targetStarBullets?: string[]; // Used for deeper Mockmate Interview integration
+    sessionId?: string; // Phase 3: Added for backend persistence
 }
 
 export interface SessionControls {
@@ -131,13 +148,41 @@ export interface QuantitativeAnalysis {
     }[];
 }
 
+export interface DimensionScore {
+    dimension: string;
+    score_status: 'scored' | 'insufficient_evidence' | 'not_tested';
+    anchor_score: number | null; // 1-5
+    normalized_score: number | null; // 0-100
+    reason: string;
+    evidence: string[]; // Observations from the transcript
+    confidence: 'low' | 'medium' | 'high';
+}
+
+export interface TrajectoryPoint {
+    turnIndex?: number;
+    turnRange?: [number, number]; // Added turn range support
+    dimension: string;
+    observation: string;
+    delta: 'improving' | 'declining' | 'stable';
+    reasoning: string;
+}
+
+export interface AuditFinding {
+    title: string;
+    dimension: string;
+    gap: string;
+    impact: 'critical' | 'moderate' | 'marginal';
+    mitigation: string;
+}
+
 export interface AdvisorAssessment {
     persona: string;
     summary: string;
     scores: {
-        skill: string;
+        skill: string; // Legacy field
         score: number;
     }[];
+    dimensionScores?: DimensionScore[]; // New field
 }
 
 export interface MicroDrill {
@@ -164,22 +209,33 @@ export interface PrioritizedAction {
 
 export interface FinalReport {
     overallSummary: string;
-    jdInsights: JDInsights;
-    competencyWeights: CompetencyWeight[];
-    advisoryPanel: AdvisorAssessment[];
-    questionPerformance: QuestionPerformance[];
-    quantitativeAnalysis?: QuantitativeAnalysis;
-    coachPack: CoachPack;
-    readiness?: {
-        status: string;
+    evaluationModel: 'legacy' | 'v1_dimensions';
+    readiness: {
+        status: 'INTERVIEW_READY' | 'ALMOST_READY' | 'NOT_READY';
         reasoning: string;
     };
+    quantitativeAnalysis: {
+        competency_scores?: {
+            competency: string;
+            score: number;
+            reason: string;
+        }[]; // Legacy
+        dimension_scores?: DimensionScore[]; // New
+    };
+    advisoryPanel: AdvisorAssessment[];
+    questionPerformance: QuestionPerformance[];
     biggestRiskArea?: {
         title: string;
         observation?: string;
         consequence?: string;
         mitigation?: string;
     };
+    coachPack: CoachPack;
+
+    // Scaffolding for new report prioritisation
+    trajectoryReplay?: TrajectoryPoint[];
+    auditLayer?: AuditFinding[];
+    pilotFeedback?: PilotFeedback;
 
     // Simplified Report Fields (for user-friendly display)
     simplifiedScore?: number; // 0-100 overall score
@@ -214,4 +270,64 @@ export interface QuestionHistoryItem {
     question: string;
     role: string;
     timestamp: number;
+}
+
+export interface ResumeSkillCategory {
+    category: string;
+    items: string[];
+}
+
+export interface ResumeExperience {
+    company: string;
+    position: string;
+    startDate: string;
+    endDate: string;
+    bullets: string[];
+}
+
+export interface ResumeProject {
+    name: string;
+    description: string;
+    tools: string[];
+    url?: string;
+}
+
+export interface ResumeEducation {
+    institution: string;
+    degree: string;
+    year: string;
+}
+
+export interface ResumeCertification {
+    name: string;
+    issuer: string;
+    year: string;
+}
+
+export interface ResumeAward {
+    title: string;
+    description: string;
+}
+
+export interface ResumeData {
+    basics: {
+        name: string;
+        email: string;
+        phone: string;
+        location: string;
+        linkedinUrl?: string;
+        portfolioUrl?: string;
+    };
+    summary: string;
+    skills: ResumeSkillCategory[];
+    experience: ResumeExperience[];
+    projects: ResumeProject[];
+    education: ResumeEducation[];
+    certifications?: ResumeCertification[];
+    awards?: ResumeAward[];
+    metadata?: {
+        parseScore?: number;
+        jdScore?: number;
+        contentScore?: number;
+    };
 }

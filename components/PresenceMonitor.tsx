@@ -16,9 +16,9 @@ const PresenceMonitor: React.FC<PresenceMonitorProps> = ({ historyCount = 0, isC
     const paceVal = 130 + Math.floor(Math.random() * 20);
 
     const metrics = [
-        { label: 'Pace', value: paceVal.toString(), unit: 'WPM', color: 'text-action-teal' },
+        { label: 'Pace', value: paceVal.toString(), unit: 'WPM', color: 'text-brand-primary' },
         { label: 'Fillers', value: historyCount > 3 ? '1' : '0', unit: 'CT', color: 'text-alert-coral' },
-        { label: 'Confidence', value: confidenceVal.toString(), unit: '%', color: 'text-info-blue' },
+        { label: 'Confidence', value: confidenceVal.toString(), unit: '%', color: 'text-brand-primary' },
     ];
 
     useEffect(() => {
@@ -54,7 +54,7 @@ const PresenceMonitor: React.FC<PresenceMonitorProps> = ({ historyCount = 0, isC
         const render = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
-            ctx.strokeStyle = isMicActive ? '#14C8B0' : 'rgba(168, 178, 209, 0.3)';
+            ctx.strokeStyle = isMicActive ? '#FFBC03' : 'rgba(168, 197, 218, 0.35)';
             ctx.lineWidth = 1.5;
 
             if (analyser && dataArray) {
@@ -108,7 +108,7 @@ const PresenceMonitor: React.FC<PresenceMonitorProps> = ({ historyCount = 0, isC
                     height={isCompact ? 16 : 24}
                     className="opacity-70 group-hover:opacity-100 transition-opacity"
                 />
-                <span className={`font-black uppercase tracking-[0.3em] ${isMicActive ? 'text-action-teal' : 'text-text-secondary opacity-30'} ${isCompact ? 'text-[7px]' : 'text-[9px]'}`}>
+                <span className={`font-black uppercase tracking-[0.12em] ${isMicActive ? 'text-brand-primary' : 'text-brand-tint'} ${isCompact ? 'text-[7px]' : 'text-[9px]'}`}>
                     {isMicActive ? (isCompact ? 'Active' : 'Signal Active') : (isCompact ? 'IDLE' : 'Idle')}
                 </span>
             </div>
@@ -116,18 +116,18 @@ const PresenceMonitor: React.FC<PresenceMonitorProps> = ({ historyCount = 0, isC
             <div className={`flex ${isCompact ? 'gap-8' : 'gap-12'}`}>
                 {metrics.map((m) => (
                     <div key={m.label} className={`flex flex-col items-center md:items-start ${isCompact ? 'min-w-[40px]' : 'min-w-[60px]'}`}>
-                        <span className={`font-black text-text-secondary uppercase tracking-[0.2em] opacity-40 mb-1 ${isCompact ? 'text-[7px]' : 'text-[9px]'}`}>{m.label}</span>
+                        <span className={`font-black text-brand-tint uppercase tracking-[0.12em] mb-1 ${isCompact ? 'text-[7px]' : 'text-[9px]'}`}>{m.label}</span>
                         <div className="flex items-baseline gap-1.5">
                             <span className={`font-mono font-black ${m.color} ${isCompact ? 'text-xs' : 'text-sm'}`}>{m.value}</span>
-                            <span className={`font-mono font-bold text-white/20 uppercase ${isCompact ? 'text-[7px]' : 'text-[9px]'}`}>{m.unit}</span>
+                            <span className={`font-mono font-bold text-brand-tint/80 uppercase ${isCompact ? 'text-[7px]' : 'text-[9px]'}`}>{m.unit}</span>
                         </div>
                     </div>
                 ))}
             </div>
 
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-[#0A192F] border border-white/10 rounded-full opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-2xl scale-95 group-hover:scale-100">
-                <p className="text-[9px] font-black text-info-blue uppercase tracking-widest">
-                    Vocal Metrics: <span className="text-white">Active monitoring based on {historyCount} responses</span>
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-brand-dark border border-white/10 rounded-full opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 shadow-2xl scale-95 group-hover:scale-100">
+                <p className="text-[9px] font-black text-brand-primary uppercase tracking-[0.12em]">
+                    Speaking signals: <span className="text-white">Based on {historyCount} responses</span>
                 </p>
             </div>
         </motion.div>

@@ -41,7 +41,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     useEffect(() => {
         if (isNonPython) {
             setIsPyodideLoading(false);
-            setTerminalOutput([{ type: 'sys', text: `AI Execution Kernel active for [${language.toUpperCase()}]. Universal logic protocol engaged.` }]);
+            setTerminalOutput([{ type: 'sys', text: `${language.toUpperCase()} practice is ready. Run your answer when you want to test it.` }]);
             return;
         }
 
@@ -57,7 +57,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                     indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/"
                 });
                 setIsPyodideLoading(false);
-                setTerminalOutput([{ type: 'sys', text: 'Python 3.12 Protocol Initialized. Ready for technical execution.' }]);
+                setTerminalOutput([{ type: 'sys', text: 'Python practice is ready.' }]);
             } catch (err) {
                 console.error("Pyodide Load Failed", err);
                 setTerminalOutput([{ type: 'err', text: 'Failed to initialize Python runtime.' }]);
@@ -90,7 +90,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
         audioService.playStart();
 
         if (isNonPython) {
-            setTerminalOutput(prev => [...prev, { type: 'sys', text: `Simulating ${language.toUpperCase()} execution via AI Kernel...` }]);
+            setTerminalOutput(prev => [...prev, { type: 'sys', text: `Checking your ${language.toUpperCase()} answer...` }]);
             const result = await mockGeminiService.simulateExecution(value, language);
             const newLogs: { type: 'out' | 'err' | 'sys', text: string }[] = [];
             if (result.stdout) newLogs.push({ type: 'out', text: result.stdout.trim() });
@@ -109,7 +109,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
             return;
         }
 
-        setTerminalOutput(prev => [...prev, { type: 'sys', text: 'Executing native kernel logic...' }]);
+        setTerminalOutput(prev => [...prev, { type: 'sys', text: 'Running your code...' }]);
 
         try {
             pyodideRef.current.runPython(`
@@ -157,14 +157,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     };
 
     return (
-        <div className="w-full h-full flex flex-col bg-[#011627] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] overflow-hidden relative border-l border-white/5">
+        <div className="w-full h-full flex flex-col bg-brand-dark shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] overflow-hidden relative border-l border-white/5">
             {/* Command Header */}
             <div className="flex items-center justify-between px-6 py-3 bg-white/[0.01] border-b border-white/5 backdrop-blur-3xl z-20">
                 <div className="flex gap-3 items-center">
                     <div className="flex items-center gap-3 py-1 px-3 bg-white/[0.03] border border-white/5 rounded-lg">
-                        <div className={`w-1.5 h-1.5 rounded-full ${isNonPython ? 'bg-info-blue' : 'bg-action-teal'} animate-pulse`} />
-                        <span className={`text-[9px] font-black uppercase tracking-widest ${isPyodideLoading ? 'text-accent-amber' : isNonPython ? 'text-info-blue' : 'text-action-teal'}`}>
-                            {isPyodideLoading ? 'Syncing Kernel...' : isNonPython ? `AI ${language.toUpperCase()} KERNEL` : 'Python v3.12 Native'}
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse" />
+                        <span className={`text-[9px] font-black uppercase tracking-[0.12em] ${isPyodideLoading ? 'text-brand-primary/70' : 'text-brand-primary'}`}>
+                            {isPyodideLoading ? 'Preparing...' : isNonPython ? `${language.toUpperCase()} practice` : 'Python practice'}
                         </span>
                     </div>
                 </div>
@@ -173,14 +173,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                     <button
                         onClick={runCode}
                         disabled={isPyodideLoading || isRunning || !value.trim()}
-                        className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-black px-4 py-2 rounded-lg text-[9px] uppercase tracking-widest transition-all active:scale-95 disabled:opacity-20"
+                        className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-black px-4 py-2 rounded-lg text-[9px] uppercase tracking-[0.12em] transition-all active:scale-95 disabled:opacity-40"
                     >
                         {isRunning ? 'Executing...' : 'Run logic'}
                     </button>
                     <button
                         onClick={() => { audioService.playConfirm(); onSubmit(value); }}
                         disabled={isProcessing || !value.trim()}
-                        className="flex items-center gap-2 bg-action-teal text-base-surface font-black px-5 py-2 rounded-lg text-[9px] uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-xl shadow-action-teal/20 disabled:opacity-30"
+                        className="flex items-center gap-2 bg-brand-primary text-brand-dark font-black px-5 py-2 rounded-lg text-[9px] uppercase tracking-[0.12em] hover:bg-brand-primary/90 active:scale-95 transition-all shadow-xl shadow-brand-primary/20 disabled:opacity-40"
                     >
                         {isProcessing ? 'Evaluating...' : 'Submit Evaluation'}
                     </button>
@@ -189,7 +189,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
             <div className="flex-grow flex overflow-hidden min-h-0 relative">
                 {/* Visual Gutters */}
-                <div className="w-12 bg-black/20 flex flex-col items-end pt-8 pr-4 text-[11px] font-mono text-text-secondary/10 select-none border-r border-white/5">
+                <div className="w-12 bg-black/20 flex flex-col items-end pt-8 pr-4 text-[11px] font-mono text-brand-tint/25 select-none border-r border-white/5">
                     {Array.from({ length: Math.max(lineCount, 50) }).map((_, i) => (
                         <div key={i} className="leading-6 h-6">{i + 1}</div>
                     ))}
@@ -203,7 +203,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                         onChange={(e) => onChange(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder={`# Architect your ${language} solution here...`}
-                        className="absolute inset-0 w-full h-full bg-transparent p-8 text-[13px] font-mono text-[#D6DEEB] leading-6 focus:outline-none resize-none scrollbar-hide selection:bg-action-teal/20 caret-info-blue"
+                        className="absolute inset-0 w-full h-full bg-transparent p-8 text-[13px] font-mono text-white leading-6 focus:outline-none resize-none scrollbar-hide selection:bg-brand-primary/20 caret-brand-primary"
                         spellCheck="false"
                     />
                 </div>
@@ -215,14 +215,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                     <div className="flex gap-6">
                         <button
                             onClick={() => setActiveTab('terminal')}
-                            className={`flex items-center gap-2 text-[9px] font-black uppercase tracking-wider pb-1 transition-all border-b ${activeTab === 'terminal' ? 'text-white border-action-teal' : 'text-text-secondary/30 border-transparent hover:text-text-secondary/60'
+                            className={`flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.12em] pb-1 transition-all border-b ${activeTab === 'terminal' ? 'text-white border-brand-primary' : 'text-brand-tint/70 border-transparent hover:text-white'
                                 }`}
                         >
                             Log Output
                         </button>
                         <button
                             onClick={() => setActiveTab('analysis')}
-                            className={`flex items-center gap-2 text-[9px] font-black uppercase tracking-wider pb-1 transition-all border-b ${activeTab === 'analysis' ? 'text-action-teal border-action-teal' : 'text-text-secondary/30 border-transparent hover:text-text-secondary/60'
+                            className={`flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.12em] pb-1 transition-all border-b ${activeTab === 'analysis' ? 'text-brand-primary border-brand-primary' : 'text-brand-tint/70 border-transparent hover:text-white'
                                 }`}
                         >
                             AI Architect
@@ -231,7 +231,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
 
                     <button
                         onClick={() => setTerminalOutput([{ type: 'sys', text: 'Protocol Reset.' }])}
-                        className="text-[8px] font-black text-text-secondary/20 hover:text-alert-coral uppercase tracking-widest transition-colors"
+                        className="text-[8px] font-black text-brand-tint/70 hover:text-white uppercase tracking-[0.12em] transition-colors"
                     >
                         Clear
                     </button>
@@ -249,10 +249,10 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                             >
                                 {terminalOutput.map((log, i) => (
                                     <div key={i} className={`flex gap-3 text-[11px] leading-relaxed ${log.type === 'err' ? 'text-alert-coral' :
-                                            log.type === 'sys' ? 'text-info-blue/50 italic' :
-                                                'text-text-primary/80'
+                                            log.type === 'sys' ? 'text-brand-tint italic' :
+                                                'text-white/80'
                                         }`}>
-                                        <span className="opacity-20 shrink-0 font-bold">{log.type === 'out' ? '>>' : log.type === 'err' ? '!!' : '..'}</span>
+                                        <span className="text-brand-tint/60 shrink-0 font-bold">{log.type === 'out' ? '>>' : log.type === 'err' ? '!!' : '..'}</span>
                                         <span className="break-all">{log.text}</span>
                                     </div>
                                 ))}
@@ -269,17 +269,17 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
                                 {feedback ? (
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-action-teal shadow-[0_0_8px_rgba(20,200,176,0.3)]" />
-                                            <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Logic Kernel Profile</span>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-brand-primary shadow-[0_0_8px_rgba(255,188,3,0.3)]" />
+                                            <span className="text-[9px] font-black text-white uppercase tracking-[0.12em]">Code feedback</span>
                                         </div>
-                                        <p className="text-[12px] text-text-secondary/80 leading-relaxed bg-white/[0.01] p-3 rounded-lg border border-white/5 whitespace-pre-wrap">
+                                        <p className="text-[12px] text-brand-tint leading-relaxed bg-white/[0.02] p-3 rounded-lg border border-white/5 whitespace-pre-wrap">
                                             {feedback}
                                         </p>
                                     </div>
                                 ) : (
                                     <div className="flex-grow flex flex-col items-center justify-center opacity-10 filter grayscale space-y-3">
                                         <div className="w-8 h-8 rounded-full border border-dashed border-white/40 animate-spin-slow" />
-                                        <span className="text-[8px] font-black uppercase tracking-[0.4em]">Awaiting Uplink</span>
+                                        <span className="text-[8px] font-black uppercase tracking-[0.12em]">Waiting for feedback</span>
                                     </div>
                                 )}
                             </motion.div>

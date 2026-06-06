@@ -2,143 +2,167 @@
 import { motion } from 'framer-motion';
 import { JDInsights, CompetencyWeight, QuestionBlueprint } from '../types';
 import React from 'react';
-import { useIsMobile } from '../hooks/useIsMobile';
 
 interface SessionBuilderProps {
     jdInsights: JDInsights;
-    competencyWeights: CompetencyWeight[];
+    competencyWeights?: CompetencyWeight[];
+    dimensionWeights?: CompetencyWeight[]; // legacy alias
     questionSet?: QuestionBlueprint[];
     researchLinks?: { uri: string; title: string; }[];
     onAdjustSpecs?: () => void;
     onInitialize?: () => void;
 }
 
-const SkillSection: React.FC<{ title: string; items: string[]; delay?: number }> = ({ title, items, delay = 0 }) => {
+/* ─── Skill Pill List ───────────────────────────────────────────────────── */
+const SkillGroup: React.FC<{ title: string; items: string[]; delay?: number }> = ({ title, items, delay = 0 }) => {
     if (!items || items.length === 0) return null;
-
     return (
         <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay, duration: 0.5 }}
-            className="space-y-3 md:space-y-4"
+            transition={{ delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="space-y-3"
         >
-            <h3 className="text-sm md:text-base font-bold text-white mb-2 md:mb-4">{title}</h3>
-            <ul className="space-y-2 md:space-y-2.5">
+            <p className="text-[9px] font-bold text-brand-primary uppercase tracking-[0.12em]">{title}</p>
+            <div className="flex flex-wrap gap-2">
                 {items.map((item, idx) => (
-                    <li key={idx} className="text-xs md:text-sm text-text-secondary pl-5 relative before:content-['•'] before:absolute before:left-0 before:text-action-teal">
+                    <span
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/[0.04] border border-white/[0.07] text-[11px] text-white/60 font-normal leading-none"
+                    >
+                        <span className="w-1 h-1 rounded-full bg-brand-primary/50 flex-shrink-0" />
                         {item}
-                    </li>
+                    </span>
                 ))}
-            </ul>
+            </div>
         </motion.div>
     );
 };
 
-const ArenaBlueprint: React.FC<SessionBuilderProps> = ({
+/* ─── Competency Bar ────────────────────────────────────────────────────── */
+const CompetencyBar: React.FC<{ label: string; pct: number; index: number }> = ({ label, pct, index }) => (
+    <motion.div
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.8 + index * 0.06 }}
+        className="flex items-center gap-3"
+    >
+        <span className="text-[10px] text-white/40 font-medium w-28 flex-shrink-0 capitalize">{label}</span>
+        <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+            <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ delay: 1 + index * 0.06, duration: 0.8, ease: 'easeOut' }}
+                className="h-full bg-brand-primary rounded-full shadow-[0_0_6px_rgba(255,188,3,0.6)]"
+            />
+        </div>
+        <span className="text-[10px] font-bold text-brand-primary/60 w-8 text-right">{pct}%</span>
+    </motion.div>
+);
+
+/* ─── Main ──────────────────────────────────────────────────────────────── */
+const SessionBuilder: React.FC<SessionBuilderProps> = ({
     jdInsights,
     competencyWeights,
-    onAdjustSpecs = () => { },
-    onInitialize = () => { }
+    dimensionWeights,
+    onAdjustSpecs = () => {},
+    onInitialize = () => {},
 }) => {
-    const isMobile = useIsMobile();
-    const isQuestionBank = jdInsights.source === 'questionBank';
-    const sourceLabel = isQuestionBank ? 'Question Bank' : 'Job Description';
+    // Support both prop names for backwards compatibility
+    const weights = competencyWeights ?? dimensionWeights ?? [];
 
-    // Ensure we always have data
-    const skills = jdInsights.mustHaveSkills?.length > 0 ? jdInsights.mustHaveSkills : [];
-    const niceToHave = jdInsights.niceToHave?.length > 0 ? jdInsights.niceToHave : [];
-    const domains = jdInsights.domains?.length > 0 ? jdInsights.domains : [];
-    const tools = jdInsights.tools?.length > 0 ? jdInsights.tools : [];
-    const softSkills = jdInsights.softSkills?.length > 0 ? jdInsights.softSkills : [];
+    const skills      = jdInsights.mustHaveSkills?.length > 0 ? jdInsights.mustHaveSkills : [];
+    const niceToHave  = jdInsights.niceToHave?.length     > 0 ? jdInsights.niceToHave    : [];
+    const domains     = jdInsights.domains?.length         > 0 ? jdInsights.domains       : [];
+    const tools       = jdInsights.tools?.length           > 0 ? jdInsights.tools         : [];
+    const softSkills  = jdInsights.softSkills?.length      > 0 ? jdInsights.softSkills    : [];
+
+    const formattedWeights = weights.map(w => ({
+        label: w.competency.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim().toLowerCase(),
+        pct: w.weight <= 1 ? Math.round(w.weight * 100) : Math.round(w.weight),
+    }));
 
     return (
-        <div className="w-full max-w-5xl mx-auto py-4 md:py-8 px-4 md:px-6">
-            {/* Header Section */}
+        <div className="w-full max-w-5xl mx-auto px-5 sm:px-8 md:px-12 py-10 md:py-16">
+
+            {/* ── Page Header ─────────────────────────────────────── */}
             <motion.div
-                initial={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0, y: -16 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center mb-8 md:mb-16"
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                className="text-center mb-8 md:mb-12 space-y-3"
             >
-                <h1 className="text-3xl md:text-5xl font-bold text-white mb-3 md:mb-4">Prepare Your Session</h1>
-                <p className="text-sm md:text-base text-text-secondary max-w-2xl mx-auto">
-                    We've analyzed your goal and generated a tailored interview plan based on your {sourceLabel}.
+                <span className="text-[10px] font-bold text-brand-primary uppercase tracking-[0.5em] opacity-60">
+                    Almost ready
+                </span>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-medium text-white tracking-tighter leading-[1.1]">
+                    Your interview plan
+                </h1>
+                <p className="text-sm md:text-base text-white/40 max-w-xl mx-auto font-normal italic leading-relaxed">
+                    We've tailored your practice session based on your goal. Review it below before you start.
                 </p>
             </motion.div>
 
-            {/* Blueprint Card - Flattened for mobile, Glass on desktop */}
+            {/* ── Blueprint Card ───────────────────────────────────── */}
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="md:bg-[#0A192F]/40 md:backdrop-blur-2xl md:border md:border-white/10 md:rounded-3xl p-0 md:p-12 space-y-8 md:space-y-10"
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                className="bg-brand-dark/95 backdrop-blur-3xl border border-white/[0.06] rounded-2xl md:rounded-3xl overflow-hidden shadow-[0_30px_60px_-12px_rgba(0,0,0,0.7)] relative"
             >
-                {/* Blueprint Header */}
-                <div className="space-y-3 md:space-y-4 pb-6 md:pb-8 border-b border-white/10">
-                    <h2 className="text-xl md:text-2xl font-bold text-action-teal">Your Interview Blueprint</h2>
-                    <p className="text-xs md:text-sm text-text-secondary leading-relaxed">
-                        The intelligence engine has synthesized the following requirements for your rehearsal.
-                    </p>
+                {/* Ambient glow */}
+                <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-[120px] -mr-48 -mt-48 pointer-events-none" />
+
+                {/* Card Header */}
+                <div className="px-6 md:px-8 py-5 md:py-6 border-b border-white/[0.06] flex items-center gap-3 relative z-10">
+                    <div className="w-2 h-2 rounded-full bg-brand-primary shadow-[0_0_10px_rgba(255,188,3,1)] animate-pulse flex-shrink-0" />
+                    <h2 className="text-sm md:text-base font-medium text-white tracking-tight">
+                        What your interview will cover
+                    </h2>
+                    <span className="ml-auto text-[10px] text-brand-tint font-bold uppercase tracking-[0.12em]">
+                        {jdInsights.source === 'questionBank' ? 'Question bank' : 'JD analysis'}
+                    </span>
                 </div>
 
                 {/* Skills Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 md:gap-x-12 gap-y-8 md:gap-y-10">
-                    <SkillSection title="Must-Have Skills" items={skills} delay={0.3} />
-                    <SkillSection title="Nice-to-Have Skills" items={niceToHave} delay={0.4} />
-                    <SkillSection title="Domains" items={domains} delay={0.5} />
-                    <SkillSection title="Tools & Tech" items={tools} delay={0.6} />
-                    <SkillSection title="Soft Skills" items={softSkills} delay={0.7} />
-                </div>
-
-                {/* Competency Weights (Compact) */}
-                {competencyWeights && competencyWeights.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.8 }}
-                        className="pt-8 md:pt-10 border-t border-white/10 space-y-6 md:space-y-8"
-                    >
-                        <h3 className="text-sm md:text-base font-bold text-white">Assessment Focus</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-8">
-                            {competencyWeights.map((w, i) => {
-                                const percentage = w.weight <= 1 ? Math.round(w.weight * 100) : Math.round(w.weight);
-                                const label = w.competency.replace(/([A-Z])/g, ' $1').trim();
-
-                                return (
-                                    <div key={i} className="text-center space-y-1 md:space-y-2">
-                                        <div className="text-xl md:text-2xl font-black text-action-teal font-mono">{percentage}%</div>
-                                        <div className="text-[9px] md:text-xs text-text-secondary uppercase tracking-wider font-bold">{label}</div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </motion.div>
+                {(skills.length > 0 || niceToHave.length > 0 || domains.length > 0 || tools.length > 0 || softSkills.length > 0) && (
+                    <div className="px-6 md:px-8 py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10 border-b border-white/[0.06]">
+                        <SkillGroup title="Must-have skills"   items={skills}     delay={0.3} />
+                        <SkillGroup title="Good to have"       items={niceToHave} delay={0.35} />
+                        <SkillGroup title="Key areas"          items={domains}    delay={0.4} />
+                        <SkillGroup title="Tools & technology" items={tools}      delay={0.45} />
+                        <SkillGroup title="Personal strengths" items={softSkills} delay={0.5} />
+                    </div>
                 )}
 
-                {/* Action Buttons */}
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1 }}
-                    className="flex flex-col md:flex-row gap-4 pt-6 md:pt-8"
-                >
+                {/* Competency Bars */}
+                {formattedWeights.length > 0 && (
+                    <div className="px-6 md:px-8 py-5 space-y-3 relative z-10 border-b border-white/[0.06]">
+                        <p className="text-[9px] font-bold text-brand-primary uppercase tracking-[0.12em] mb-4">Focus areas</p>
+                        {formattedWeights.map((w, i) => (
+                            <CompetencyBar key={i} label={w.label} pct={w.pct} index={i} />
+                        ))}
+                    </div>
+                )}
+
+                {/* Actions */}
+                <div className="px-6 md:px-8 py-5 flex flex-col sm:flex-row gap-3 relative z-10">
                     <button
                         onClick={onInitialize}
-                        className="w-full md:flex-[2] bg-action-teal hover:bg-action-teal/90 text-base-surface font-black py-4 md:py-5 px-6 rounded-xl shadow-lg shadow-action-teal/30 hover:shadow-action-teal/50 transition-all text-[11px] md:text-sm uppercase tracking-widest order-1 md:order-2"
+                        className="flex-[2] bg-brand-primary hover:bg-brand-primary/90 text-brand-dark font-bold py-4 px-8 rounded-xl text-xs uppercase tracking-[0.12em] shadow-[0_10px_30px_-8px_rgba(255,188,3,0.4)] transition-all active:scale-[0.98] order-1 sm:order-2"
                     >
-                        Launch Interview Session →
+                        Start my interview →
                     </button>
                     <button
                         onClick={onAdjustSpecs}
-                        className="w-full md:flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-4 md:py-5 px-6 rounded-xl transition-all text-[10px] md:text-sm tracking-widest order-2 md:order-1"
+                        className="flex-1 bg-white/5 hover:bg-white/10 border border-white/[0.07] text-brand-tint hover:text-white font-bold py-4 px-8 rounded-xl text-xs uppercase tracking-[0.12em] transition-all active:scale-[0.98] order-2 sm:order-1"
                     >
-                        Adjust Specs
+                        Go back
                     </button>
-                </motion.div>
+                </div>
             </motion.div>
         </div>
     );
 };
 
-export default ArenaBlueprint;
-
+export default SessionBuilder;

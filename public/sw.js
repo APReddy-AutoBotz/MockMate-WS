@@ -4,10 +4,10 @@ const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/pwa-192x192.png',
-  '/pwa-512x512.png',
-  '/pwa-apple-180x180.png',
-  '/pwa-maskable-192x192.png'
+  '/pwa-192x192.svg',
+  '/pwa-512x512.svg',
+  '/pwa-apple-180x180.svg',
+  '/pwa-maskable-192x192.svg'
 ];
 
 // Install event - cache resources
@@ -23,6 +23,17 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from cache when offline
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  if (url.pathname.startsWith('/api/') || url.pathname === '/ephemeral-token') {
+    event.respondWith(
+      fetch(event.request).catch(() => new Response(
+        JSON.stringify({ error: "You're offline. Reconnect to continue practice." }),
+        { status: 503, headers: { 'Content-Type': 'application/json' } }
+      ))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -89,8 +100,8 @@ function doBackgroundSync() {
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data ? event.data.text() : 'New notification from MockMate',
-    icon: '/pwa-192x192.png',
-    badge: '/pwa-192x192.png',
+    icon: '/pwa-192x192.svg',
+    badge: '/pwa-192x192.svg',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -100,12 +111,12 @@ self.addEventListener('push', (event) => {
       {
         action: 'explore',
         title: 'Explore',
-        icon: '/pwa-192x192.png'
+        icon: '/pwa-192x192.svg'
       },
       {
         action: 'close',
         title: 'Close',
-        icon: '/pwa-192x192.png'
+        icon: '/pwa-192x192.svg'
       }
     ]
   };

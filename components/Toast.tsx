@@ -12,12 +12,12 @@ interface ToastProps {
   onClose?: (id: string) => void;
 }
 
-const Toast: React.FC<ToastProps> = ({ 
-  id, 
-  message, 
-  type = 'info', 
-  duration = 5000, 
-  onClose 
+const Toast: React.FC<ToastProps> = ({
+  id,
+  message,
+  type = 'info',
+  duration = 5000,
+  onClose
 }) => {
   const [isVisible, setIsVisible] = useState(true);
 
@@ -33,45 +33,46 @@ const Toast: React.FC<ToastProps> = ({
   const getIcon = () => {
     switch (type) {
       case 'success':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircle className="w-5 h-5 text-brand-primary" />;
       case 'error':
-        return <AlertCircle className="w-5 h-5 text-red-500" />;
+        return <AlertCircle className="w-5 h-5 text-error" />;
       case 'warning':
-        return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+        return <AlertTriangle className="w-5 h-5 text-warning" />;
       default:
-        return <Info className="w-5 h-5 text-blue-500" />;
+        return <Info className="w-5 h-5 text-brand-tint" />;
     }
   };
 
-  const getBackgroundColor = () => {
+  const getAccentColor = () => {
     switch (type) {
-      case 'success':
-        return 'bg-green-50 border-green-200';
-      case 'error':
-        return 'bg-red-50 border-red-200';
-      case 'warning':
-        return 'bg-yellow-50 border-yellow-200';
-      default:
-        return 'bg-blue-50 border-blue-200';
+      case 'success': return 'bg-brand-primary';
+      case 'error':   return 'bg-error';
+      case 'warning': return 'bg-warning';
+      default:        return 'bg-brand-tint/60';
     }
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: -50, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -50, scale: 0.9 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className={`
-            flex items-center gap-3 p-4 rounded-lg border shadow-lg backdrop-blur-md
-            min-w-[300px] max-w-md
-            ${getBackgroundColor()}
-          `}
+          initial={{ opacity: 0, x: 20, scale: 0.95 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: 20, scale: 0.95 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="
+            flex items-center gap-4 p-5 rounded-2xl border backdrop-blur-2xl
+            min-w-[320px] max-w-md relative overflow-hidden group
+            bg-brand-dark/95 border-white/10 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.5)]
+          "
         >
-          {getIcon()}
-          <p className="flex-1 text-sm font-medium text-gray-800">
+          {/* Type-specific left accent bar */}
+          <div className={`absolute top-0 left-0 w-[3px] h-full ${getAccentColor()} opacity-70 group-hover:opacity-100 transition-opacity`} />
+
+          <div className="flex-shrink-0 ml-2">
+            {getIcon()}
+          </div>
+          <p className="flex-1 text-[13px] font-medium text-white/80 leading-relaxed" style={{ textTransform: 'none' }}>
             {message}
           </p>
           <button
@@ -79,9 +80,9 @@ const Toast: React.FC<ToastProps> = ({
               setIsVisible(false);
               setTimeout(() => onClose?.(id), 300);
             }}
-            className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+            className="flex-shrink-0 p-2 hover:bg-white/5 rounded-full transition-colors"
           >
-            <X className="w-4 h-4 text-gray-500" />
+            <X className="w-4 h-4 text-brand-tint hover:text-white transition-colors" />
           </button>
         </motion.div>
       )}

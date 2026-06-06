@@ -18,106 +18,86 @@ export default defineConfig(({ mode }) => {
             globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
             runtimeCaching: [
               {
-                urlPattern: /^https:\/\/api\.openai\.com\/.*/i,
-                handler: 'NetworkFirst',
-                options: {
-                  cacheName: 'api-cache',
-                  expiration: {
-                    maxEntries: 10,
-                    maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-                  },
-                },
-              },
-              {
-                urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
-                handler: 'NetworkFirst',
-                options: {
-                  cacheName: 'firebase-cache',
-                  expiration: {
-                    maxEntries: 10,
-                    maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
-                  },
-                },
+                urlPattern: ({ url }) => url.pathname.startsWith('/api/') || url.pathname === '/ephemeral-token',
+                handler: 'NetworkOnly',
               },
             ],
           },
-          includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+          includeAssets: [
+            'pwa-192x192.svg',
+            'pwa-512x512.svg',
+            'pwa-apple-180x180.svg',
+            'pwa-maskable-192x192.svg',
+          ],
           manifest: {
-            name: 'MockMate - AI Interview Coach',
+            name: 'MockMate - Resume, English & Interview Practice',
             short_name: 'MockMate',
-            description: 'AI-powered interview coaching platform for job seekers',
-            theme_color: '#0A192F',
-            background_color: '#0A192F',
+            description: 'Build an ATS-friendly resume, practice spoken English, and prepare for interviews with calm guidance.',
+            theme_color: '#002C4B',
+            background_color: '#002C4B',
             display: 'standalone',
             orientation: 'portrait',
             scope: '/',
             start_url: '/',
             icons: [
               {
-                src: 'pwa-192x192.png',
+                src: 'pwa-192x192.svg',
                 sizes: '192x192',
-                type: 'image/png'
+                type: 'image/svg+xml'
               },
               {
-                src: 'pwa-512x512.png',
+                src: 'pwa-512x512.svg',
                 sizes: '512x512',
-                type: 'image/png'
+                type: 'image/svg+xml'
               },
               {
-                src: 'pwa-apple-180x180.png',
+                src: 'pwa-apple-180x180.svg',
                 sizes: '180x180',
-                type: 'image/png',
+                type: 'image/svg+xml',
                 purpose: 'apple touch icon'
               },
               {
-                src: 'pwa-maskable-192x192.png',
+                src: 'pwa-maskable-192x192.svg',
                 sizes: '192x192',
-                type: 'image/png',
+                type: 'image/svg+xml',
                 purpose: 'maskable'
               }
             ],
             shortcuts: [
               {
-                name: 'Start Interview',
+                name: 'Interview practice',
                 short_name: 'Interview',
-                description: 'Start a new mock interview session',
+                description: 'Practice interview questions',
                 url: '/?action=interview',
-                icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
+                icons: [{ src: 'pwa-192x192.svg', sizes: '192x192' }]
               },
               {
-                name: 'View Reports',
-                short_name: 'Reports',
-                description: 'View your interview performance reports',
-                url: '/?action=reports',
-                icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
+                name: 'Resume review',
+                short_name: 'Resume',
+                description: 'Review your resume for ATS fit',
+                url: '/?action=resume',
+                icons: [{ src: 'pwa-192x192.svg', sizes: '192x192' }]
+              },
+              {
+                name: 'Speaking practice',
+                short_name: 'Speak',
+                description: 'Practice spoken English',
+                url: '/?action=speaking',
+                icons: [{ src: 'pwa-192x192.svg', sizes: '192x192' }]
               }
             ],
             categories: ['education', 'productivity', 'business'],
             lang: 'en',
             dir: 'ltr',
-            prefer_related_applications: false,
-            screenshots: [
-              {
-                src: 'screenshot-desktop.png',
-                sizes: '1280x720',
-                type: 'image/png',
-                form_factor: 'wide',
-                label: 'MockMate on desktop'
-              },
-              {
-                src: 'screenshot-mobile.png',
-                sizes: '375x667',
-                type: 'image/png',
-                form_factor: 'narrow',
-                label: 'MockMate on mobile'
-              }
-            ]
+            prefer_related_applications: false
           }
         })
       ],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'process.env.NODE_ENV': JSON.stringify(mode),
+        'process.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || ''),
+        'process.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL || ''),
+        'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY || '')
       },
       resolve: {
         alias: {
@@ -126,7 +106,7 @@ export default defineConfig(({ mode }) => {
       },
       build: {
         rollupOptions: {
-          external: ['@google/genai', 'firebase-admin'],
+          external: ['@google/genai'],
           output: {
             manualChunks: {
                 // Split vendor chunks

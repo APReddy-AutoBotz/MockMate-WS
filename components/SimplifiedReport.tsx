@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { FinalReport, PrioritizedAction } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -30,115 +31,94 @@ const SimplifiedReport: React.FC<SimplifiedReportProps> = ({ report, onRestart, 
     const score = report.simplifiedScore || calculateScore(report);
     const readinessPercent = Math.round(score);
 
-    // Get status color
-    const getStatusColor = () => {
-        if (readinessPercent >= 80) return { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400' };
-        if (readinessPercent >= 60) return { bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-400' };
-        return { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400' };
-    };
-
-    const statusColors = getStatusColor();
-
     // Get readiness text
     const getReadinessText = () => {
-        if (readinessPercent >= 80) return 'Interview Ready!';
+        if (readinessPercent >= 80) return 'Interview Ready';
         if (readinessPercent >= 60) return 'Almost Ready';
         return 'Needs Practice';
     };
 
     return (
-        <div className="w-full max-w-4xl mx-auto p-4 md:p-8 space-y-6 md:space-y-8">
+        <div className="w-full max-w-3xl mx-auto px-5 md:px-8 py-10 md:py-16 space-y-8">
 
             {/* PART 1: THE VERDICT */}
             <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-10 space-y-6"
+                className="bg-white/[0.02] border border-white/[0.06] rounded-2xl md:rounded-3xl p-8 md:p-12 text-center space-y-8 shadow-2xl relative overflow-hidden"
             >
-                <div className="text-center space-y-4">
-                    <h1 className="text-2xl md:text-3xl font-bold text-white">Your Interview Report</h1>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-brand-primary/5 rounded-full blur-[80px] -mr-32 -mt-32" />
 
-                    {/* Big Score */}
-                    <div className="py-6 md:py-8">
-                        <div className="text-6xl md:text-8xl font-black text-white mb-2">
-                            {readinessPercent}
-                            <span className="text-2xl md:text-4xl text-white/40">/100</span>
-                        </div>
+                <div className="space-y-2 relative z-10">
+                    <span className="text-[9px] font-bold text-brand-primary uppercase tracking-[0.12em]">Session result</span>
+                    <h1 className="text-2xl md:text-4xl font-medium text-white tracking-tight">Your practice performance</h1>
+                </div>
 
-                        {/* Progress Bar */}
-                        <div className="w-full max-w-md mx-auto h-3 md:h-4 bg-white/10 rounded-full overflow-hidden mt-4">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${readinessPercent}%` }}
-                                transition={{ duration: 1.5, ease: "easeOut" }}
-                                className={`h-full ${readinessPercent >= 80 ? 'bg-green-500' : readinessPercent >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                            />
-                        </div>
+                {/* Big Score */}
+                <div className="relative z-10">
+                    <div className="text-7xl md:text-9xl font-black text-white tracking-tighter leading-none mb-4">
+                        {readinessPercent}
+                        <span className="text-xl md:text-2xl text-brand-tint font-bold ml-1">/100</span>
                     </div>
 
-                    {/* Status Badge */}
-                    <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full border-2 ${statusColors.bg} ${statusColors.border}`}>
-                        <div className={`w-2 h-2 rounded-full ${statusColors.text} animate-pulse`} />
-                        <span className={`text-sm md:text-base font-bold ${statusColors.text} uppercase tracking-wide`}>
-                            {getReadinessText()}
-                        </span>
+                    {/* Progress Bar */}
+                    <div className="w-full max-w-sm mx-auto h-1.5 bg-white/5 rounded-full overflow-hidden mt-6 shadow-inner">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${readinessPercent}%` }}
+                            transition={{ duration: 1.5, ease: "easeOut" }}
+                            className="h-full bg-brand-primary shadow-[0_0_12px_rgba(255,188,3,0.6)]"
+                        />
                     </div>
+                </div>
+
+                {/* Status Badge */}
+                <div className="inline-flex items-center gap-2.5 px-6 py-2.5 rounded-full border border-brand-primary/20 bg-brand-primary/5 relative z-10">
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-primary animate-pulse" />
+                    <span className="text-[10px] font-bold text-brand-primary uppercase tracking-widest">
+                        {getReadinessText()}
+                    </span>
                 </div>
 
                 {/* Key Insights */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12 relative z-10">
                     {/* Top Strength */}
-                    <div className="bg-green-500/5 border border-green-500/20 rounded-xl md:rounded-2xl p-4 md:p-6">
-                        <div className="flex items-start gap-3">
-                            <span className="text-2xl">✅</span>
-                            <div className="flex-1">
-                                <h3 className="text-xs md:text-sm font-bold text-green-400 uppercase tracking-wider mb-2">Your Strength</h3>
-                                <p className="text-sm md:text-base text-white font-medium">
-                                    {report.topStrength || getTopStrength(report)}
-                                </p>
-                            </div>
+                    <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 text-left">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-brand-primary text-xs font-bold uppercase tracking-widest opacity-60">Strength</span>
                         </div>
+                        <p className="text-sm text-white/80 font-medium italic leading-relaxed">
+                            "{report.topStrength || getTopStrength(report)}"
+                        </p>
                     </div>
 
                     {/* Top Weakness */}
-                    <div className="bg-red-500/5 border border-red-500/20 rounded-xl md:rounded-2xl p-4 md:p-6">
-                        <div className="flex items-start gap-3">
-                            <span className="text-2xl">⚠️</span>
-                            <div className="flex-1">
-                                <h3 className="text-xs md:text-sm font-bold text-red-400 uppercase tracking-wider mb-2">Work On</h3>
-                                <p className="text-sm md:text-base text-white font-medium">
-                                    {report.topWeakness || getTopWeakness(report)}
-                                </p>
-                            </div>
+                    <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 text-left">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-brand-tint text-xs font-bold uppercase tracking-[0.12em]">Focus area</span>
                         </div>
-                    </div>
-                </div>
-
-                {/* Estimated Timeline */}
-                {report.estimatedSessionsToReady && (
-                    <div className="text-center pt-4 border-t border-white/10">
-                        <p className="text-sm md:text-base text-white/70">
-                            ⏱️ <span className="font-bold text-white">{report.estimatedSessionsToReady}</span> more practice session{report.estimatedSessionsToReady > 1 ? 's' : ''} recommended
+                        <p className="text-sm text-white/40 font-medium italic leading-relaxed">
+                            "{report.topWeakness || getTopWeakness(report)}"
                         </p>
                     </div>
-                )}
+                </div>
             </motion.section>
 
-            {/* PART 2: WHAT HAPPENED (Collapsible) */}
+            {/* PART 2: BREAKDOWN (Collapsible) */}
             <motion.section
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
+                className="space-y-4"
             >
                 <button
                     onClick={() => setShowDetails(!showDetails)}
-                    className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-5 flex items-center justify-between transition-colors"
+                    className="w-full bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] rounded-2xl p-5 flex items-center justify-between transition-all group"
                 >
-                    <span className="text-base md:text-lg font-bold text-white">Show Detailed Breakdown</span>
+                    <span className="text-sm font-bold text-white/50 group-hover:text-white uppercase tracking-widest">Show detailed breakdown</span>
                     <motion.span
                         animate={{ rotate: showDetails ? 180 : 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="text-white text-xl"
+                        className="text-brand-primary text-xs"
                     >
                         ▼
                     </motion.span>
@@ -150,27 +130,28 @@ const SimplifiedReport: React.FC<SimplifiedReportProps> = ({ report, onRestart, 
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.3 }}
+                            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                             className="overflow-hidden"
                         >
-                            <div className="mt-4 p-4 md:p-6 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl space-y-6">
+                            <div className="p-6 md:p-10 bg-white/[0.02] border border-white/[0.06] rounded-2xl space-y-10">
                                 {/* Top Skills */}
                                 {report.quantitativeAnalysis && report.quantitativeAnalysis.competency_scores.length > 0 && (
-                                    <div>
-                                        <h3 className="text-lg md:text-xl font-bold text-white mb-4">Skills Breakdown</h3>
-                                        <div className="space-y-3">
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-1 h-1 rounded-full bg-brand-primary" />
+                                            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">Skills Matrix</h3>
+                                        </div>
+                                        <div className="space-y-4">
                                             {report.quantitativeAnalysis.competency_scores.slice(0, 5).map((skill, i) => (
-                                                <div key={i} className="space-y-1">
+                                                <div key={i} className="space-y-2">
                                                     <div className="flex justify-between items-center">
-                                                        <span className="text-sm md:text-base text-white font-medium">{skill.competency}</span>
-                                                        <span className={`text-sm md:text-base font-bold ${skill.score >= 80 ? 'text-green-400' : skill.score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                                            {skill.score}%
-                                                        </span>
+                                                        <span className="text-[11px] text-white/50 font-medium uppercase tracking-widest">{skill.competency}</span>
+                                                        <span className="text-[11px] font-bold text-brand-primary tracking-widest">{skill.score}%</span>
                                                     </div>
-                                                    <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                                                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                                                         <div
                                                             style={{ width: `${skill.score}%` }}
-                                                            className={`h-full ${skill.score >= 80 ? 'bg-green-500' : skill.score >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                                            className="h-full bg-brand-primary/60"
                                                         />
                                                     </div>
                                                 </div>
@@ -181,30 +162,22 @@ const SimplifiedReport: React.FC<SimplifiedReportProps> = ({ report, onRestart, 
 
                                 {/* Better Answers Section */}
                                 {report.questionPerformance && report.questionPerformance.length > 0 && (
-                                    <div>
-                                        <h3 className="text-lg md:text-xl font-bold text-white mb-4">💡 Better Answers</h3>
-                                        <p className="text-sm md:text-base text-white/60 mb-4">
-                                            Here's how top performers would have answered your toughest questions:
-                                        </p>
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-1 h-1 rounded-full bg-brand-primary" />
+                                            <h3 className="text-xs font-bold text-white/60 uppercase tracking-widest">Practice Gems</h3>
+                                        </div>
                                         <div className="space-y-4">
                                             {report.questionPerformance
                                                 .filter(q => q.max_impact_response && q.user_transcript !== '[SKIPPED]')
-                                                .slice(0, 3)
+                                                .slice(0, 2)
                                                 .map((q, i) => (
-                                                    <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
-                                                        <div className="flex items-start gap-2">
-                                                            <span className="text-blue-400 font-bold">Q:</span>
-                                                            <p className="text-sm md:text-base text-white/90 font-medium flex-1">
-                                                                {q.question_text}
-                                                            </p>
-                                                        </div>
-                                                        <div className="bg-green-500/5 border border-green-500/20 rounded-lg p-3 ml-6">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <span className="text-xs font-bold text-green-400 uppercase tracking-wider">
-                                                                    ⭐ Ideal Response
-                                                                </span>
-                                                            </div>
-                                                            <p className="text-sm md:text-base text-white/80 leading-relaxed italic">
+                                                    <div key={i} className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-5 space-y-4">
+                                                        <p className="text-[11px] text-brand-tint font-bold uppercase tracking-[0.12em]">Question {i + 1}</p>
+                                                        <p className="text-xs md:text-sm text-white/80 font-medium italic leading-relaxed">"{q.question_text}"</p>
+                                                        <div className="bg-brand-primary/[0.03] border border-brand-primary/10 rounded-lg p-4">
+                                                            <span className="text-[9px] font-bold text-brand-primary uppercase tracking-widest mb-2 block">Better approach</span>
+                                                            <p className="text-xs md:text-sm text-brand-primary/70 leading-relaxed italic">
                                                                 "{q.max_impact_response}"
                                                             </p>
                                                         </div>
@@ -214,42 +187,34 @@ const SimplifiedReport: React.FC<SimplifiedReportProps> = ({ report, onRestart, 
                                         </div>
                                     </div>
                                 )}
-
-                                {/* Summary */}
-                                <div>
-                                    <h3 className="text-lg md:text-xl font-bold text-white mb-3">Overall Feedback</h3>
-                                    <p className="text-sm md:text-base text-white/80 leading-relaxed">
-                                        {report.overallSummary}
-                                    </p>
-                                </div>
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </motion.section>
 
-            {/* PART 3: WHAT TO DO NEXT */}
+            {/* PART 3: NEXT STEPS */}
             <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="bg-blue-500/5 border border-blue-500/20 rounded-2xl md:rounded-3xl p-6 md:p-10 space-y-6"
+                className="bg-brand-primary/[0.02] border border-brand-primary/10 rounded-2xl md:rounded-3xl p-8 md:p-12 space-y-8"
             >
-                <div className="text-center">
-                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">What to Do Next</h2>
-                    <p className="text-sm md:text-base text-white/60">Practice these to improve your score</p>
+                <div className="text-center space-y-2">
+                    <span className="text-[9px] font-bold text-brand-primary uppercase tracking-[0.12em]">Improvement plan</span>
+                    <h2 className="text-xl md:text-3xl font-medium text-white tracking-tight">Your path to success</h2>
                 </div>
 
                 {/* Quick Wins */}
                 {report.quickWins && report.quickWins.length > 0 && (
-                    <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl md:rounded-2xl p-4 md:p-6">
-                        <h3 className="text-base md:text-lg font-bold text-yellow-400 mb-3 flex items-center gap-2">
-                            <span>⚡</span> Quick Wins (2-5 min each)
+                    <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-6">
+                        <h3 className="text-[10px] font-bold text-brand-primary mb-4 flex items-center gap-2 uppercase tracking-widest">
+                            <span className="text-xs">⚡</span> Quick adjustments
                         </h3>
-                        <ul className="space-y-2">
+                        <ul className="space-y-3">
                             {report.quickWins.map((win, i) => (
-                                <li key={i} className="text-sm md:text-base text-white flex items-start gap-2">
-                                    <span className="text-yellow-400 mt-1">•</span>
+                                <li key={i} className="text-xs md:text-sm text-white/60 flex items-start gap-3 leading-relaxed">
+                                    <span className="text-brand-primary font-bold mt-0.5">•</span>
                                     <span>{win}</span>
                                 </li>
                             ))}
@@ -260,53 +225,46 @@ const SimplifiedReport: React.FC<SimplifiedReportProps> = ({ report, onRestart, 
                 {/* Prioritized Actions */}
                 <div className="space-y-4">
                     {(report.prioritizedActions || generateDefaultActions(report)).map((action, i) => (
-                        <motion.div
+                        <div
                             key={i}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.5 + (i * 0.1) }}
-                            className="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-6"
+                            className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-6 space-y-4"
                         >
-                            <div className="flex items-start justify-between gap-4 mb-3">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-lg md:text-xl font-bold text-white">{i + 1}.</span>
-                                        <h4 className="text-base md:text-lg font-bold text-white">{action.title}</h4>
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-bold text-brand-primary opacity-40">{i + 1}.</span>
+                                        <h4 className="text-sm font-bold text-white tracking-tight">{action.title}</h4>
                                     </div>
-                                    <div className="flex items-center gap-3 text-xs md:text-sm text-white/60">
-                                        <span className={`px-2 py-1 rounded ${action.impact === 'high' ? 'bg-red-500/20 text-red-400' :
-                                            action.impact === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                'bg-blue-500/20 text-blue-400'
-                                            } font-bold uppercase`}>
+                                    <div className="flex items-center gap-3">
+                                        <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded border ${
+                                            action.impact === 'high' ? 'border-brand-primary/40 text-brand-primary bg-brand-primary/5' : 'border-white/10 text-white/40'
+                                        }`}>
                                             {action.impact} Impact
                                         </span>
-                                        <span>⏱️ {action.timeEstimate}</span>
+                                        <span className="text-[9px] font-bold text-brand-tint uppercase tracking-[0.12em]">{action.timeEstimate}</span>
                                     </div>
                                 </div>
                             </div>
-                            <p className="text-sm md:text-base text-white/80 mb-4">{action.exercise}</p>
-                            <button className="w-full md:w-auto px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold rounded-lg transition-colors">
-                                Start Practice →
-                            </button>
-                        </motion.div>
+                            <p className="text-xs md:text-sm text-white/50 leading-relaxed italic">"{action.exercise}"</p>
+                        </div>
                     ))}
                 </div>
             </motion.section>
 
             {/* Action Buttons */}
-            <div className="flex flex-col md:flex-row gap-4 pt-6">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
                 <button
                     onClick={handleDownload}
                     disabled={isDownloading}
-                    className="flex-1 px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/20 text-white text-sm md:text-base font-bold rounded-xl md:rounded-2xl transition-colors disabled:opacity-50"
+                    className="flex-1 px-8 py-5 bg-white/5 hover:bg-white/10 border border-white/[0.08] text-white text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all active:scale-[0.98]"
                 >
-                    {isDownloading ? '📥 Downloading...' : '📥 Download Report'}
+                    {isDownloading ? 'Downloading...' : 'Get PDF Report'}
                 </button>
                 <button
                     onClick={onRestart}
-                    className="flex-1 px-6 py-4 bg-blue-500 hover:bg-blue-600 text-white text-sm md:text-base font-bold rounded-xl md:rounded-2xl transition-colors"
+                    className="flex-1 px-8 py-5 bg-brand-primary hover:bg-brand-primary/90 text-brand-dark text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-xl shadow-brand-primary/10 active:scale-[0.98]"
                 >
-                    🚀 Start Next Session
+                    Start New Session
                 </button>
             </div>
         </div>
@@ -349,7 +307,6 @@ function getTopWeakness(report: FinalReport): string {
 function generateDefaultActions(report: FinalReport): PrioritizedAction[] {
     const actions: PrioritizedAction[] = [];
 
-    // Add action from biggest risk
     if (report.biggestRiskArea) {
         actions.push({
             title: report.biggestRiskArea.title,
@@ -359,7 +316,6 @@ function generateDefaultActions(report: FinalReport): PrioritizedAction[] {
         });
     }
 
-    // Add actions from coach pack
     if (report.coachPack?.micro_drills) {
         report.coachPack.micro_drills.slice(0, 2).forEach((drill, i) => {
             actions.push({

@@ -1,320 +1,273 @@
-/* ============================================
-   MOBILE-FIRST PWA OPTIMIZATIONS
-   Applies on mobile devices and installed PWAs
-   ============================================ */
-
-/* Override for PWA standalone mode */
-html.pwa-mobile,
-html.pwa-mobile body {
-  background-attachment: scroll !important;
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Safe area support for notched devices */
-html.pwa-mobile body {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-}
-
-@media (max-width: 768px) {
-  body {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-}
 
 /* ============================================
-   FLATTEN NESTED CONTAINERS - Remove glassmorphic effects
+   DESIGN SYSTEM - BRAND COLORS & MODES
    ============================================ */
 
-html.pwa-mobile .glass-premium {
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
+:root {
+  /* Brand Colors */
+  --color-brand-dark: #001A2D;        /* Ultra Deep Navy — darkest surfaces */
+  --color-brand-primary: #FFBC03;     /* Amber Yellow — primary brand color, key CTAs */
+  --color-brand-accent: #1B4F72;      /* Steel Blue — structural depth */
+  --color-brand-tint: #A8C5DA;        /* Sky Tint — highlights and accents */
+
+  /* Neutrals */
+  --color-ink: #002C4B;               /* Deep Navy — main background */
+  --color-obsidian: #00365C;          /* Card Background */
+  --color-midnight: #004270;          /* Border/Structural */
+  --color-paper: #F2F5F7;             /* Off-white light surface */
+  --color-paper-card: #FFFFFF;
+  --color-paper-border: #D9E3EA;
+  --color-paper-text: #123B56;
+  --color-paper-muted: #557187;
+
+  /* Typography Scale */
+  --font-size-h1: 32px;
+  --font-size-h2: 24px;
+  --font-size-h3: 18px;
+  --font-size-body: 16px;
+  --font-size-caption: 13px;
+
+  --font-weight-body: 400;
+  --font-weight-heading: 500;
+
+  /* Surface Mode: Dark (Default) */
+  --color-background-page: var(--color-ink);
+  --color-background-card: rgba(0, 54, 92, 0.4);
+  --color-border: rgba(168, 197, 218, 0.1);
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: var(--color-brand-tint);
+  --color-text-muted: rgba(168, 197, 218, 0.4);
 }
 
-@media (max-width: 768px) {
-  .glass-premium {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border-color: transparent !important;
-    box-shadow: none !important;
-  }
+.mode-dark {
+  --color-background-page: var(--color-ink);
+  --color-background-card: rgba(0, 54, 92, 0.42);
+  --color-border: rgba(168, 197, 218, 0.16);
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: var(--color-brand-tint);
+  --color-text-muted: rgba(168, 197, 218, 0.72);
 }
 
-/* Remove backdrop blur from ALL elements */
-html.pwa-mobile [class*="backdrop-blur"] {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-@media (max-width: 768px) {
-  [class*="backdrop-blur"] {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-}
-
-/* Remove all box shadows */
-html.pwa-mobile [class*="shadow"] {
-  box-shadow: none !important;
-}
-
-@media (max-width: 768px) {
-  [class*="shadow-"] {
-    box-shadow: none !important;
-  }
-}
-
-/* Flatten borders on containers */
-html.pwa-mobile [class*="border-white/"],
-html.pwa-mobile [class*="border-gray"] {
-  border-color: transparent !important;
-}
-
-@media (max-width: 768px) {
-
-  [class*="border-white/"],
-  [class*="border-gray"] {
-    border-color: transparent !important;
-  }
-}
-
-/* Keep functional borders (buttons, inputs) */
-html.pwa-mobile button[class*="border"],
-html.pwa-mobile input[class*="border"],
-html.pwa-mobile select[class*="border"] {
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-@media (max-width: 768px) {
-
-  button[class*="border"],
-  input[class*="border"],
-  select[class*="border"] {
-    border-color: rgba(255, 255, 255, 0.1) !important;
-  }
+.mode-light {
+  --color-background-page: var(--color-paper);
+  --color-background-card: var(--color-paper-card);
+  --color-border: var(--color-paper-border);
+  --color-text-primary: var(--color-paper-text);
+  --color-text-secondary: var(--color-paper-muted);
+  --color-text-muted: #6D8393;
+  color: var(--color-text-primary);
 }
 
 /* ============================================
-   OPTIMIZE SPACING & SIZING
+   BASE TYPOGRAPHY
    ============================================ */
 
-/* Reduce excessive padding */
-html.pwa-mobile [class*="p-10"],
-html.pwa-mobile [class*="p-12"],
-html.pwa-mobile [class*="p-14"],
-html.pwa-mobile [class*="p-16"] {
-  padding: 1rem !important;
+html,
+body,
+#root {
+  min-height: 100%;
 }
 
-@media (max-width: 768px) {
-
-  [class*="p-10"],
-  [class*="p-12"],
-  [class*="p-14"],
-  [class*="p-16"] {
-    padding: 1rem !important;
-  }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  font-weight: var(--font-weight-body);
+  color: var(--color-text-primary);
+  background-color: var(--color-background-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-html.pwa-mobile [class*="px-10"],
-html.pwa-mobile [class*="px-12"] {
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
+/* Styled scrollbar — brand-aligned */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 188, 3, 0.2) transparent;
 }
-
-@media (max-width: 768px) {
-
-  [class*="px-10"],
-  [class*="px-12"] {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-  }
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
 }
-
-html.pwa-mobile [class*="py-10"],
-html.pwa-mobile [class*="py-12"] {
-  padding-top: 1rem !important;
-  padding-bottom: 1rem !important;
+*::-webkit-scrollbar-track {
+  background: transparent;
 }
-
-@media (max-width: 768px) {
-
-  [class*="py-10"],
-  [class*="py-12"] {
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-  }
-}
-
-/* Reduce large border radius */
-html.pwa-mobile [class*="rounded-3xl"],
-html.pwa-mobile [class*="rounded-2xl"],
-html.pwa-mobile [class*="rounded-[2"],
-html.pwa-mobile [class*="rounded-[3"] {
-  border-radius: 1rem !important;
-}
-
-@media (max-width: 768px) {
-
-  [class*="rounded-3xl"],
-  [class*="rounded-2xl"],
-  [class*="rounded-[2"],
-  [class*="rounded-[3"] {
-    border-radius: 1rem !important;
-  }
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 188, 3, 0.2);
+  border-radius: 4px;
 }
 
 /* ============================================
-   TOUCH OPTIMIZATION - Minimum 48px targets
+   BASE COMPONENTS
    ============================================ */
 
-html.pwa-mobile button,
-html.pwa-mobile a,
-html.pwa-mobile [role="button"] {
-  min-height: 48px;
-  min-width: 48px;
+.btn-primary {
+  background: var(--color-brand-primary);
+  color: var(--color-brand-dark);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 10px 25px -5px rgba(255, 188, 3, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px -5px rgba(255, 188, 3, 0.4);
+}
+
+.focus-ring,
+button,
+a,
+input,
+textarea,
+select,
+[role="button"] {
+  outline-offset: 3px;
+}
+
+.focus-ring:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  box-shadow: 0 0 0 5px rgba(0, 26, 45, 0.75);
+}
+
+.glass-card {
+  background: rgba(0, 54, 92, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(168, 197, 218, 0.08);
+  border-radius: 24px;
+}
+
+/* ============================================
+   PWA & MOBILE OPTIMIZATIONS
+   ============================================ */
+
+/* Safe-area spacing is applied inside the React app shell so browser and PWA
+   layouts do not double-pad the page body. */
+
+/* Touch targets — Minimum 48px */
+button, a, [role="button"] {
+  min-height: 44px;
   touch-action: manipulation;
 }
 
-@media (max-width: 768px) {
-
-  button,
-  a,
-  [role="button"] {
-    min-height: 48px;
-    min-width: 48px;
-    touch-action: manipulation;
-  }
-}
-
-/* Input fields */
-html.pwa-mobile input,
-html.pwa-mobile textarea,
-html.pwa-mobile select {
+input, textarea, select {
   min-height: 48px;
-  font-size: 16px !important;
-  /* Prevents zoom on iOS */
-}
-
-@media (max-width: 768px) {
-
-  input,
-  textarea,
-  select {
-    min-height: 48px;
-    font-size: 16px !important;
-  }
+  font-size: 16px !important; /* Prevents auto-zoom on iOS */
 }
 
 /* ============================================
-   PERFORMANCE OPTIMIZATIONS
+   ANIMATIONS
    ============================================ */
 
-/* Use GPU acceleration for animations */
-html.pwa-mobile [class*="transition"] {
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+@keyframes pulse-amber {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.95); }
 }
 
-@media (max-width: 768px) {
-  [class*="transition"] {
-    will-change: transform, opacity;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-  }
+.animate-pulse-amber {
+  animation: pulse-amber 2s infinite ease-in-out;
 }
 
-/* Hide decorative elements on mobile */
-html.pwa-mobile [class*="pointer-events-none"][class*="absolute"]:not(.animate-pulse) {
-  opacity: 0 !important;
-  pointer-events: none;
+/* Shimmer Effect */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 188, 3, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s infinite linear;
 }
 
-@media (max-width: 768px) {
-  [class*="pointer-events-none"][class*="absolute"]:not(.animate-pulse) {
-    opacity: 0 !important;
-    pointer-events: none;
-  }
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 /* ============================================
-   ROOT & LAYOUT
+   PREMIUM AGENCY DESIGN UTILITIES (HYBRID CALM COACH)
    ============================================ */
 
-html.pwa-mobile #root {
-  width: 100% !important;
-  min-height: 100vh;
-  min-height: 100dvh;
+.font-heading {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-@media (max-width: 768px) {
-  #root {
-    width: 100% !important;
-    min-height: 100vh;
-    min-height: 100dvh;
-  }
+.font-mono {
+  font-family: 'Geist Mono', monospace;
 }
 
-/* Full viewport on mobile */
-html.pwa-mobile,
-html.pwa-mobile html,
-html.pwa-mobile body {
+/* Outer/Inner Bezel Hardware design */
+.bezel-outer {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(168, 197, 218, 0.07);
+  padding: 6px;
+  border-radius: 28px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bezel-outer:hover {
+  border-color: rgba(255, 188, 3, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bezel-inner {
+  background: rgba(0, 36, 62, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  border-radius: 22px; /* Mathematically calculated: 28px outer - 6px padding */
+}
+
+/* Noise overlay for cinematic texture */
+.noise-texture {
+  position: fixed;
+  inset: 0;
   width: 100%;
-  overflow-x: hidden;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.018;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
-@media (max-width: 768px) {
-
-  html,
-  body {
-    width: 100%;
-    overflow-x: hidden;
-  }
+/* Custom premium transitions */
+.transition-premium {
+  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ============================================
-   DISABLE PROBLEMATIC EFFECTS
-   ============================================ */
-
-/* Disable blur backgrounds (performance) */
-html.pwa-mobile [class*="blur-"]:not([class*="backdrop-blur"]) {
-  filter: none !important;
+/* Glow effects */
+.glow-orb {
+  filter: blur(100px);
+  pointer-events: none;
+  opacity: 0.12;
 }
 
-@media (max-width: 768px) {
-  [class*="blur-"]:not([class*="backdrop-blur"]) {
-    filter: none !important;
-  }
+/* Custom scrollbar override */
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 197, 218, 0.2) transparent;
 }
-
-/* Simplify gradients on low-power devices */
-@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
-  [class*="gradient"] {
-    background: #0A192F !important;
-  }
+.custom-scroll::-webkit-scrollbar {
+  width: 5px;
 }
-
-/* ============================================
-   CINEMATIC SPLASH SCREEN ANIMATIONS
-   ============================================ */
-
-@keyframes gridSlide {
-  0% {
-    transform: translateY(0);
-  }
-
-  100% {
-    transform: translateY(50px);
-  }
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(168, 197, 218, 0.25);
+  border-radius: 10px;
+}
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-primary);
 }

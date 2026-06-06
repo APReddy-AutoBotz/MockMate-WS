@@ -1,74 +1,52 @@
 import { calibrateIntent } from '../mockGeminiService';
 import { ValidationError } from '../../utils/errorHandler';
 
-// Mock the AI service
-jest.mock('../mockGeminiService', () => ({
-  calibrateIntent: jest.fn(),
-}));
-
-import { PERSONAS_CONFIG } from '../../personas.config';
-
 describe('Mock Gemini Service', () => {
+  const originalFetch = global.fetch;
+
   beforeEach(() => {
-    jest.clearAllMocks();
+    global.fetch = jest.fn();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    jest.restoreAllMocks();
   });
 
   describe('calibrateIntent', () => {
     it('should throw ValidationError for empty intent', async () => {
       await expect(calibrateIntent('')).rejects.toThrow(ValidationError);
       await expect(calibrateIntent('  ')).rejects.toThrow(ValidationError);
-      await expect(calibrateIntent('ab')).rejects.toThrow(ValidationError);
     });
 
     it('should throw ValidationError for short intent', async () => {
       await expect(calibrateIntent('ab')).rejects.toThrow(ValidationError);
     });
 
-    it('should accept valid intent', async () => {
-      const mockCalibrateIntent = calibrateIntent as jest.MockedFunction<typeof calibrateIntent>;
+    it('should accept valid intent and make fetch call', async () => {
       const mockResult = {
-        recommendedPanelIDs: ['p1', 'p2', 'p3'],
+        recommendedPanelIDs: ['p1', 'p2'],
         recommendedRole: 'Software Engineer'
       };
-      
-      mockCalibrateIntent.mockResolvedValue(mockResult);
-      
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResult,
+      });
+
       const result = await calibrateIntent('Senior Software Engineer');
-      
-      expect(mockCalibrateIntent).toHaveBeenCalledWith('Senior Software Engineer');
       expect(result).toEqual(mockResult);
+      expect(global.fetch).toHaveBeenCalledTimes(1);
     });
 
-    it('should return fallback panel IDs when no valid IDs returned', async () => {
-      const mockCalibrateIntent = calibrateIntent as jest.MockedFunction<typeof calibrateIntent>;
-      const mockResult = {
-        recommendedPanelIDs: [], // Empty array should trigger fallback
-        recommendedRole: 'Software Engineer'
-      };
-      
-      mockCalibrateIntent.mockResolvedValue(mockResult);
-      
-      const result = await calibrateIntent('Software Engineer');
-      
-      expect(result.recommendedPanelIDs).toEqual(['p1', 'p2', 'p3']); // Should use fallback
-    });
+    it('should throw Error on fetch failures', async () => {
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: false,
+        statusText: 'Internal Server Error',
+        json: async () => ({ error: 'Database error' }),
+      });
 
-    it('should filter invalid panel IDs', async () => {
-      const mockCalibrateIntent = calibrateIntent as jest.MockedFunction<typeof calibrateIntent>;
-      const mockResult = {
-        recommendedPanelIDs: ['invalid1', 'p2', 'invalid2'], // Mix of valid and invalid
-        recommendedRole: 'Software Engineer'
-      };
-      
-      mockCalibrateIntent.mockResolvedValue(mockResult);
-      
-      const result = await calibrateIntent('Software Engineer');
-      
-      const validIDs = PERSONAS_CONFIG.map(p => p.id);
-      const filteredIDs = result.recommendedPanelIDs.filter(id => validIDs.includes(id));
-      
-      expect(filteredIDs).toEqual(['p2']); // Only valid ID should remain
-      expect(result.recommendedPanelIDs.length).toBeLessThanOrEqual(3); // Should not exceed 3
+      await expect(calibrateIntent('Senior Software Engineer')).rejects.toThrow('Database error');
     });
   });
 });

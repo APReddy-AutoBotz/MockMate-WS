@@ -30,7 +30,7 @@ const Orb: React.FC<{ persona: Persona & { orbitDuration: number }, radius: numb
                 repeat: Infinity,
             }}
         >
-            <div title={persona.blurb} className={`w-20 h-20 -ml-10 -mt-10 rounded-full bg-base-surface border-2 border-${persona.color} flex items-center justify-center shadow-lg`}>
+            <div title={persona.blurb} className="w-20 h-20 -ml-10 -mt-10 rounded-full bg-brand-dark border-2 border-brand-primary/40 flex items-center justify-center shadow-lg">
                 <PersonaIcon className={`w-10 h-10 text-${persona.color}`} />
             </div>
         </motion.div>
@@ -59,7 +59,7 @@ const InterviewOrbit: React.FC<InterviewOrbitProps> = ({ panelIDs }) => {
     return (
         <div className="relative w-full h-full flex items-center justify-center aspect-square max-w-xl mx-auto">
             <div className="relative w-full h-full flex items-center justify-center">
-                <div className="absolute w-40 h-40 bg-base-surface/50 border-2 border-info-blue/20 rounded-full flex items-center justify-center text-center p-4 shadow-2xl">
+                <div className="absolute w-40 h-40 bg-brand-dark/60 border-2 border-brand-primary/20 rounded-full flex items-center justify-center text-center p-4 shadow-2xl">
                     <div className="flex flex-col items-center">
                         <motion.div 
                             className="w-3 h-3 bg-alert-coral rounded-full mb-2"
@@ -67,7 +67,7 @@ const InterviewOrbit: React.FC<InterviewOrbitProps> = ({ panelIDs }) => {
                             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                         />
                         <span className="font-bold text-lg text-text-primary">Live Session</span>
-                        <p className="text-xs text-text-secondary">Focus and Respond</p>
+                        <p className="text-xs text-brand-tint">Focus and respond</p>
                     </div>
                 </div>
                 {selectedPersonas.map((persona, index) => (

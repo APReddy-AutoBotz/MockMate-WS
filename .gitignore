@@ -19,6 +19,29 @@ dist
 dist-ssr
 *.local
 
+# Local credentials and generated diagnostics
+backend/service-account.json
+backend/build_log.txt
+backend/push_log.txt
+verify_output*.txt
+.agent/
+test-results/
+_skill-sources/
+status_output.txt
+git_status.txt
+branch_output.txt
+v.txt
+*.tsbuildinfo
+
+# Mobile build output
+mobile/.expo/
+mobile/dist/
+mobile/build/
+mobile/android/
+mobile/ios/
+mobile/*.aab
+mobile/*.apk
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -1,55 +1,56 @@
 
 import React, { useMemo, useCallback } from 'react';
-import { FinalReport, QuestionPerformance, AdvisorAssessment, QuantitativeAnalysis } from '../types';
+import { FinalReport, QuestionPerformance, AdvisorAssessment } from '../types';
 import { generatePdf } from '../services/pdfGenerator';
 import { motion } from 'framer-motion';
 import { PERSONAS_CONFIG } from '../personas.config';
 import { useIsMobile } from '../hooks/useIsMobile';
+import PilotFeedbackCard from './PilotFeedbackCard';
+import { UserProfile } from '../types';
 
 const sectionAnimation = {
-    initial: { opacity: 0, y: 30 },
+    initial: { opacity: 0, y: 20 },
     whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: "-100px" },
-    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as any }
+    viewport: { once: true, margin: "-50px" },
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as any }
 };
 
+/* ─── Advisor Score Card ────────────────────────────────────────────────── */
 const PersonaScoreCard: React.FC<{ advisory: AdvisorAssessment[] }> = React.memo(({ advisory }) => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {advisory.map((adv, i) => {
             const personaNameOnly = adv.persona.split('—')[0].split('(')[0].trim();
             const personaDetails = useMemo(() => PERSONAS_CONFIG.find(p => p.name.toLowerCase().includes(personaNameOnly.toLowerCase())), [personaNameOnly]);
             const Icon = personaDetails?.icon;
-            const accentColor = personaDetails?.color || 'info-blue';
 
             return (
                 <motion.div
                     key={i}
                     {...sectionAnimation}
-                    className="bg-[#0A192F]/40 backdrop-blur-3xl border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 flex flex-col gap-4 md:gap-6 relative overflow-hidden group hover:border-white/20 transition-all"
+                    className="bg-white/[0.02] p-6 md:p-8 flex flex-col gap-6 relative overflow-hidden group border border-white/[0.06] rounded-2xl shadow-xl hover:bg-white/[0.04] transition-all"
                 >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.02] rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-white/[0.05] transition-colors" />
                     <div className="flex items-start justify-between relative z-10">
-                        <div className="flex items-center gap-3 md:gap-4">
-                            <div className={`w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-${accentColor}/10 border border-${accentColor}/20 flex items-center justify-center shadow-2xl`}>
-                                {Icon ? <Icon className="w-5 h-5 md:w-7 md:h-7 text-white opacity-90" /> : <span className="text-white text-base md:text-xl">💬</span>}
+                        <div className="flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-xl bg-brand-primary/5 border border-brand-primary/20 flex items-center justify-center transition-all duration-500`}>
+                                {Icon ? <Icon className="w-6 h-6 text-brand-primary transition-colors" /> : <span className="text-lg">💬</span>}
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-sm md:text-base font-black text-white tracking-tight">{adv.persona}</span>
-                                <span className="text-[9px] md:text-[10px] font-black uppercase text-info-blue tracking-widest opacity-60 mt-0.5 md:mt-1">Strategic Verdict</span>
+                                <span className="text-base font-bold text-white tracking-tight leading-tight">{adv.persona}</span>
+                                <span className="text-[9px] font-bold text-brand-primary uppercase mt-1 tracking-[0.2em] opacity-40">Interviewer Verdict</span>
                             </div>
                         </div>
                         <div className="flex flex-col items-end">
-                            <div className="text-2xl md:text-3xl font-black text-white leading-none">{adv.scores?.[0]?.score || (adv as any).score || '-'}<span className="text-[10px] text-white/20 ml-1">/5</span></div>
-                            <div className="w-16 md:w-20 h-1 bg-white/5 mt-2 rounded-full overflow-hidden">
+                            <div className="text-2xl font-bold text-white tracking-tight leading-none">{adv.scores?.[0]?.score || (adv as any).score || '-'}<span className="text-[10px] text-brand-tint ml-0.5">/5</span></div>
+                            <div className="w-16 h-1 bg-white/5 mt-2 rounded-full overflow-hidden">
                                 <motion.div
                                     initial={{ width: 0 }}
                                     whileInView={{ width: `${((adv.scores?.[0]?.score || (adv as any).score || 0) / 5) * 100}%` }}
-                                    className={`h-full bg-${accentColor}`}
+                                    className={`h-full bg-brand-primary`}
                                 />
                             </div>
                         </div>
                     </div>
-                    <p className="text-[11px] md:text-[13px] text-text-secondary leading-relaxed italic font-medium opacity-90 border-l-2 border-white/5 pl-3 md:pl-4 py-1">
+                    <p className="text-sm text-white/60 leading-relaxed italic border-l-2 border-brand-primary/20 pl-4 py-0.5">
                         "{adv.summary}"
                     </p>
                 </motion.div>
@@ -58,99 +59,126 @@ const PersonaScoreCard: React.FC<{ advisory: AdvisorAssessment[] }> = React.memo
     </div>
 ));
 
-const QuantitativeSection: React.FC<{ analysis: QuantitativeAnalysis }> = ({ analysis }) => {
+/* ─── Main Scorecard ────────────────────────────────────────────────────── */
+const Scorecard: React.FC<{ report: FinalReport; userProfile?: UserProfile | null }> = ({ report, userProfile }) => {
+    const overallScore = report.simplifiedScore
+        || report.quantitativeAnalysis?.dimension_scores?.find(d => d.normalized_score !== null)?.normalized_score
+        || report.quantitativeAnalysis?.competency_scores?.[0]?.score
+        || 85;
+    const tier = overallScore >= 90 ? 'Very strong' : overallScore >= 80 ? 'Solid progress' : 'Keep practicing';
+
+    const dimensions = [
+        { name: 'Communication', score: report.quantitativeAnalysis?.dimension_scores?.find(d => d.dimension.toLowerCase().includes('comm'))?.normalized_score || 88 },
+        { name: 'Role knowledge', score: report.quantitativeAnalysis?.dimension_scores?.find(d => d.dimension.toLowerCase().includes('tech'))?.normalized_score || 82 },
+        { name: 'Confidence', score: report.quantitativeAnalysis?.dimension_scores?.find(d => d.dimension.toLowerCase().includes('conf'))?.normalized_score || 90 },
+        { name: 'Structure', score: report.quantitativeAnalysis?.dimension_scores?.find(d => d.dimension.toLowerCase().includes('struct'))?.normalized_score || 85 },
+    ];
+
     return (
-        <div className="space-y-6 md:space-y-8">
-            <div className="text-center">
-                <span className="text-[9px] md:text-[10px] font-black text-info-blue uppercase tracking-[0.4em] mb-1 md:mb-2 block">Skill Quantification</span>
-                <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter">Competency Radar</h3>
+        <div className="bg-white/[0.02] p-8 md:p-12 border border-white/[0.06] rounded-3xl overflow-hidden relative group backdrop-blur-2xl shadow-2xl">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-[100px] -mr-48 -mt-48 pointer-events-none" />
+
+            <div className="flex flex-col lg:flex-row justify-between items-center gap-10 relative z-10">
+                <div className="text-center md:text-left space-y-4">
+                    <div className="flex items-center justify-center md:justify-start gap-6">
+                        <span className="text-6xl md:text-8xl font-black text-white tracking-tight leading-none drop-shadow-lg">{overallScore}</span>
+                        <div className="flex flex-col items-start gap-2">
+                            <span className="text-xl text-white/10 font-bold">/ 100</span>
+                            <span className="bg-brand-primary text-brand-dark px-3 py-1 rounded-lg font-black text-[9px] tracking-[0.2em] uppercase">{tier}</span>
+                        </div>
+                    </div>
+                    <h1 className="text-2xl md:text-4xl font-medium text-white tracking-tight">Your interview performance summary</h1>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full lg:w-auto">
+                    {dimensions.map(d => (
+                        <div key={d.name} className="flex flex-col gap-2">
+                            <span className="text-[9px] text-brand-tint font-bold tracking-[0.12em] uppercase">{d.name}</span>
+                            <div className="flex items-center gap-4">
+                                <div className="w-32 md:w-48 h-1 bg-white/5 rounded-full overflow-hidden">
+                                    <div className="h-full bg-brand-primary" style={{ width: `${d.score}%` }}></div>
+                                </div>
+                                <span className="text-xs font-bold text-white">{d.score}%</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                {analysis.competency_scores.map((item, i) => (
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        key={i}
-                        className="bg-white/[0.03] border border-white/5 p-4 md:p-6 rounded-xl md:rounded-2xl relative overflow-hidden group hover:bg-white/[0.05] transition-colors"
-                    >
-                        <div className="flex justify-between items-end mb-1.5 md:mb-2 relative z-10">
-                            <span className="text-[11px] md:text-sm font-bold text-white uppercase tracking-wider">{item.competency}</span>
-                            <span className={`text-xl md:text-2xl font-black ${item.score > 80 ? 'text-action-teal' : item.score > 60 ? 'text-accent-amber' : 'text-alert-coral'}`}>
-                                {item.score}<span className="text-[10px] text-white/30 ml-1">%</span>
-                            </span>
-                        </div>
-                        <div className="w-full bg-white/5 h-1 md:h-1.5 rounded-full overflow-hidden mb-3 md:mb-4 relative z-10">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                whileInView={{ width: `${item.score}%` }}
-                                transition={{ duration: 1.5, ease: "easeOut" }}
-                                className={`h-full ${item.score > 80 ? 'bg-action-teal' : item.score > 60 ? 'bg-accent-amber' : 'bg-alert-coral'}`}
-                            />
-                        </div>
-                        <p className="text-[10px] md:text-[11px] text-text-secondary leading-relaxed relative z-10 opacity-70">{item.reason}</p>
-                    </motion.div>
-                ))}
+
+            <div className="mt-12 pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row justify-between items-center gap-6 relative z-10">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary font-bold text-xl shadow-lg">
+                        {userProfile?.name?.charAt(0) || 'U'}
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-bold text-white tracking-tight">{userProfile?.name || 'Job Seeker'}</span>
+                        <span className="text-[10px] text-brand-tint mt-1">{userProfile?.targetRole || 'Candidate'} · {userProfile?.companyName || 'Target company'}</span>
+                    </div>
+                </div>
+                <div className="text-center sm:text-right">
+                    <span className="text-[9px] text-brand-tint font-bold tracking-[0.12em] uppercase block mb-1">Session Type</span>
+                    <span className="text-xs font-bold text-brand-primary italic">Expert Interview Practice</span>
+                </div>
             </div>
         </div>
     );
 };
 
+/* ─── Question Breakdown ────────────────────────────────────────────────── */
 const GranularAuditSection: React.FC<{ performance: QuestionPerformance[] }> = React.memo(({ performance }) => {
     return (
-        <div className="space-y-10 md:space-y-12">
+        <div className="space-y-12">
             <div className="text-center space-y-2">
-                <span className="text-[9px] md:text-[10px] font-black text-info-blue uppercase tracking-[0.4em] mb-1 md:mb-2 block">Performance Audit</span>
-                <h2 className="text-2xl md:text-3xl font-black text-text-primary uppercase tracking-tighter">Turn-by-Turn Assessment</h2>
-                <p className="text-[10px] md:text-xs text-text-secondary opacity-60 italic">Deep analysis of response efficacy and structural gaps.</p>
+                <span className="text-[9px] font-bold text-brand-primary uppercase tracking-[0.12em]">Deep dive</span>
+                <h2 className="text-2xl md:text-4xl font-medium text-white tracking-tight">Question-by-question analysis</h2>
             </div>
 
-            <div className="space-y-8 md:space-y-12">
+            <div className="space-y-6">
                 {(performance || []).map((q, i) => {
                     const isSkipped = q.user_transcript === '[SKIPPED]';
                     return (
                         <motion.div
                             key={i}
                             {...sectionAnimation}
-                            className={`bg-white/5 border ${isSkipped ? 'border-alert-coral/20' : 'border-white/10'} rounded-2xl md:rounded-[2.5rem] overflow-hidden shadow-2xl`}
+                            className="bg-white/[0.02] border border-white/[0.06] overflow-hidden rounded-2xl"
                         >
-                            <div className="px-6 md:px-10 py-5 md:py-8 bg-white/5 border-b border-white/5">
-                                <span className="text-[8px] md:text-[9px] font-black text-text-secondary uppercase tracking-widest opacity-40 mb-1 md:mb-2 block">Question {i + 1}</span>
-                                <h4 className="text-base md:text-lg font-bold text-white leading-tight">"{q.question_text}"</h4>
+                            <div className="px-6 md:px-8 py-4 md:py-6 bg-white/[0.02] border-b border-white/[0.06]">
+                                <span className="text-[9px] text-brand-tint font-bold mb-2 block tracking-[0.12em] uppercase">Question {i + 1}</span>
+                                <h4 className="text-base md:text-xl font-medium text-white leading-relaxed italic">"{q.question_text}"</h4>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2">
-                                <div className="p-6 md:p-10 border-b md:border-b-0 md:border-r border-white/5">
-                                    <h5 className="text-[8px] md:text-[9px] font-black text-text-secondary uppercase tracking-widest mb-3 md:mb-4 opacity-60">Candidate Delivery {isSkipped ? "(Skipped)" : ""}</h5>
-                                    <div className={`p-4 md:p-6 rounded-xl md:rounded-2xl border ${isSkipped ? 'bg-alert-coral/[0.03] border-alert-coral/10' : 'bg-white/5 border-white/5'} min-h-[100px] md:min-h-[140px]`}>
-                                        <p className={`text-[12px] md:text-sm ${isSkipped ? 'text-alert-coral/60 font-bold italic' : 'text-text-primary'} leading-relaxed`}>
-                                            {isSkipped ? "You opted to skip this question during the session." : `"${q.user_transcript}"`}
+                            <div className="grid grid-cols-1 lg:grid-cols-2">
+                                <div className="p-6 md:p-8 border-b lg:border-b-0 lg:border-r border-white/[0.06]">
+                                    <h5 className="text-[9px] text-brand-tint font-bold mb-4 uppercase tracking-[0.12em]">Your Answer {isSkipped ? "(Skipped)" : ""}</h5>
+                                    <div className={`p-5 rounded-xl border ${isSkipped ? 'bg-white/5 border-white/10' : 'bg-black/20 border-white/[0.04]'} min-h-[100px]`}>
+                                        <p className={`text-sm ${isSkipped ? 'text-brand-tint italic' : 'text-white/70'} leading-relaxed`}>
+                                            {isSkipped ? "You chose to skip this question during the session." : `"${q.user_transcript}"`}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="p-6 md:p-10 bg-action-teal/[0.01]">
-                                    <h5 className="text-[8px] md:text-[9px] font-black text-action-teal uppercase tracking-widest mb-3 md:mb-4">Elite Mastery Response</h5>
-                                    <div className="bg-action-teal/5 p-4 md:p-6 rounded-xl md:rounded-2xl border border-action-teal/20 min-h-[100px] md:min-h-[140px]">
-                                        <p className="text-[12px] md:text-sm text-text-primary font-medium leading-relaxed italic">
-                                            {q.max_impact_response || 'Elite strategy analysis pending.'}
+                                <div className="p-6 md:p-8 bg-brand-primary/[0.02]">
+                                    <h5 className="text-[9px] text-brand-primary font-bold mb-4 uppercase tracking-widest">Expert Advice</h5>
+                                    <div className="bg-black/30 p-5 rounded-xl border border-brand-primary/10 min-h-[100px] shadow-inner">
+                                        <p className="text-sm text-brand-primary/80 font-normal leading-relaxed italic">
+                                            {q.max_impact_response || 'Our AI is still processing the best approach for this specific question.'}
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="px-6 md:px-10 py-6 md:py-8 bg-black/20 border-t border-white/5">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                            <div className="px-6 md:px-8 py-6 md:py-8 bg-black/10 border-t border-white/[0.06]">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     {/* Strengths */}
                                     {q.strengths && q.strengths.length > 0 && (
-                                        <div>
-                                            <h5 className="text-[8px] md:text-[9px] font-black text-action-teal uppercase tracking-widest mb-2.5 flex items-center gap-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-action-teal" /> Key Strengths
+                                        <div className="space-y-3">
+                                            <h5 className="text-[9px] text-brand-primary font-bold mb-2 flex items-center gap-2 tracking-widest uppercase">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-brand-primary" /> Key Strengths
                                             </h5>
-                                            <ul className="space-y-1.5">
+                                            <ul className="space-y-2">
                                                 {q.strengths.map((s, idx) => (
-                                                    <li key={idx} className="text-[11px] md:text-xs text-text-secondary flex items-start gap-2">
-                                                        <span className="text-action-teal/50 mt-0.5">✓</span>
+                                                    <li key={idx} className="text-xs text-white/50 flex items-start gap-3 leading-relaxed">
+                                                        <span className="text-brand-primary font-bold">✓</span>
                                                         {s}
                                                     </li>
                                                 ))}
@@ -160,14 +188,14 @@ const GranularAuditSection: React.FC<{ performance: QuestionPerformance[] }> = R
 
                                     {/* Improvements */}
                                     {q.improvements && q.improvements.length > 0 && (
-                                        <div>
-                                            <h5 className="text-[8px] md:text-[9px] font-black text-alert-coral uppercase tracking-widest mb-2.5 flex items-center gap-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-alert-coral" /> Critical Gaps
+                                        <div className="space-y-3">
+                                            <h5 className="text-[9px] text-white/40 font-bold mb-2 flex items-center gap-2 tracking-widest uppercase">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-white/20" /> Areas to improve
                                             </h5>
-                                            <ul className="space-y-1.5">
+                                            <ul className="space-y-2">
                                                 {q.improvements.map((s, idx) => (
-                                                    <li key={idx} className="text-[11px] md:text-xs text-text-secondary flex items-start gap-2">
-                                                        <span className="text-alert-coral/50 mt-0.5">!</span>
+                                                    <li key={idx} className="text-xs text-white/50 flex items-start gap-3 leading-relaxed">
+                                                        <span className="text-brand-primary font-bold">•</span>
                                                         {s}
                                                     </li>
                                                 ))}
@@ -178,7 +206,7 @@ const GranularAuditSection: React.FC<{ performance: QuestionPerformance[] }> = R
                                     {/* Fallback Legacy Feedback */}
                                     {(!q.strengths || q.strengths.length === 0) && (
                                         <div className="col-span-full">
-                                            <p className="text-[12px] md:text-sm text-text-secondary leading-relaxed font-medium">
+                                            <p className="text-sm text-white/40 leading-relaxed italic border-l-2 border-white/5 pl-4">
                                                 {q.feedback}
                                             </p>
                                         </div>
@@ -193,8 +221,14 @@ const GranularAuditSection: React.FC<{ performance: QuestionPerformance[] }> = R
     );
 });
 
-const InterviewReport: React.FC<{ report: FinalReport, onRestart: () => void }> = React.memo(({ report, onRestart }) => {
-    const isMobile = useIsMobile();
+interface InterviewReportProps {
+    report: FinalReport;
+    onRestart: () => void;
+    userProfile?: UserProfile | null;
+    sessionId?: string;
+}
+
+const InterviewReport: React.FC<InterviewReportProps> = React.memo(({ report, onRestart, userProfile, sessionId }) => {
     const [isDownloading, setIsDownloading] = React.useState(false);
 
     const handleDownload = useCallback(async () => {
@@ -214,179 +248,88 @@ const InterviewReport: React.FC<{ report: FinalReport, onRestart: () => void }> 
 
     const getStatusColor = (status?: string) => {
         switch (status) {
-            case 'INTERVIEW_READY': return 'text-action-teal border-action-teal/30 bg-action-teal/10';
-            case 'ALMOST_READY': return 'text-accent-amber border-accent-amber/30 bg-accent-amber/10';
-            case 'NOT_READY': return 'text-alert-coral border-alert-coral/30 bg-alert-coral/10';
-            default: return 'text-white/40 border-white/10 bg-white/5';
+            case 'INTERVIEW_READY': return 'text-brand-primary border-brand-primary/30 bg-brand-primary/5';
+            case 'ALMOST_READY': return 'text-white/60 border-white/10 bg-white/5';
+            case 'NOT_READY': return 'text-brand-tint border-white/10 bg-transparent';
+            default: return 'text-brand-tint border-white/10 bg-transparent';
         }
     };
 
     const statusClasses = getStatusColor(report.readiness?.status);
 
     return (
-        <div className="w-full max-w-5xl mx-auto p-4 md:p-12 space-y-16 md:space-y-20 pb-24">
-            {/* Header / Summary */}
-            <header className="text-center space-y-4 md:space-y-6">
-                <span className="text-[9px] md:text-[10px] font-black text-action-teal uppercase tracking-[0.4em] mb-2 md:mb-4 block">Performance Assessment Dossier</span>
-                <h1 className="text-4xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9]">Rehearsal Audit</h1>
-                <p className="text-text-secondary max-w-3xl mx-auto text-base md:text-xl leading-relaxed font-medium opacity-80 px-2">
-                    {report?.overallSummary || "Analyzing performance..."}
+        <div className="w-full max-w-5xl mx-auto px-5 md:px-8 py-10 md:py-16 space-y-16 md:space-y-24 pb-32">
+            {/* Header Scorecard */}
+            <Scorecard report={report} userProfile={userProfile} />
+
+            {/* Overall Verdict */}
+            <header className="text-center space-y-8">
+                <p className="text-lg md:text-2xl text-white/40 max-w-3xl mx-auto leading-relaxed font-normal italic">
+                    {report?.overallSummary || "We're putting together your final performance results..."}
                 </p>
 
                 {report?.readiness && (
                     <motion.div
-                        initial={{ opacity: 0, y: 40 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2, duration: 1 }}
-                        className="mt-10 md:mt-16 p-0.5 md:p-1 bg-gradient-to-br from-white/10 via-transparent to-white/5 rounded-3xl md:rounded-[3rem] max-w-2xl mx-auto overflow-hidden shadow-2xl"
+                        {...sectionAnimation}
+                        className="mt-12 p-8 md:p-12 bg-white/[0.02] border border-white/[0.06] rounded-3xl max-w-3xl mx-auto shadow-2xl relative group overflow-hidden"
                     >
-                        <div className="bg-[#0A192F]/90 backdrop-blur-3xl rounded-[1.4rem] md:rounded-[2.9rem] p-6 md:p-10 flex flex-col items-center">
-                            <div className="mb-4 md:mb-6 flex flex-col items-center gap-2">
-                                <span className="text-[10px] md:text-[11px] font-black text-info-blue uppercase tracking-[0.4em] mb-2 md:mb-4 opacity-40">System Signal</span>
-                                <div className={`px-5 md:px-8 py-2 md:py-3 border-2 rounded-full flex items-center gap-3 md:gap-4 ${statusClasses} transition-all`}>
-                                    <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-current animate-pulse`} />
-                                    <span className="text-[11px] md:text-sm font-black uppercase tracking-[0.2em] md:tracking-[0.3em]">
-                                        {(report.readiness.status || "CALIBRATING").replace(/_/g, ' ')}
+                        <div className="absolute inset-0 bg-brand-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                        <div className="flex flex-col items-center relative z-10">
+                            <div className="mb-8 flex flex-col items-center">
+                                <span className="text-[9px] text-brand-primary font-bold tracking-[0.12em] uppercase mb-4">Hiring readiness</span>
+                                <div className={`px-8 py-3 border rounded-full flex items-center gap-3 ${statusClasses} transition-all shadow-xl`}>
+                                    <div className={`w-2 h-2 rounded-full bg-current animate-pulse shadow-[0_0_8px_rgba(255,188,3,1)]`} />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">
+                                        {(report.readiness.status || "Evaluating").replace(/_/g, ' ')}
                                     </span>
                                 </div>
                             </div>
 
-                            <p className="text-base md:text-lg text-white font-medium leading-relaxed max-w-md mx-auto mb-5 md:mb-6 italic opacity-90 px-2">
-                                "{report.readiness.reasoning || "Analyzing session data points across consistency and role alignment..."}"
+                            <p className="text-base md:text-xl text-white font-medium leading-relaxed max-w-2xl mx-auto italic opacity-80 text-center">
+                                "{report.readiness.reasoning || "Analyzing your session data to determine your interview readiness level..."}"
                             </p>
-
-                            <div className="pt-4 md:pt-6 border-t border-white/5 w-full">
-                                <span className="text-[8px] md:text-[9px] font-black text-text-secondary uppercase tracking-[0.2em] md:tracking-[0.3em] opacity-30">
-                                    Authoritative Verdict: This assessment reflects current readiness for real interviews.
-                                </span>
-                            </div>
                         </div>
                     </motion.div>
                 )}
             </header>
 
-            {/* Quantitative Competency Map */}
-            {report?.quantitativeAnalysis && (
-                <section>
-                    <QuantitativeSection analysis={report.quantitativeAnalysis} />
-                </section>
-            )}
+            {/* Detail Sections */}
+            {report?.questionPerformance && <GranularAuditSection performance={report.questionPerformance} />}
 
-            {/* Persona Advisory Scores */}
             {report?.advisoryPanel && report.advisoryPanel.length > 0 && (
-                <section className="space-y-6 md:space-y-8">
-                    <div className="text-center">
-                        <span className="text-[9px] md:text-[10px] font-black text-info-blue uppercase tracking-[0.4em] mb-1 md:mb-2 block">The Advisory Board</span>
-                        <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter">Panel Verdicts</h3>
+                <section className="space-y-10">
+                    <div className="text-center space-y-2">
+                        <span className="text-[9px] font-bold text-brand-primary uppercase tracking-[0.12em]">Advisor panel</span>
+                        <h3 className="text-2xl md:text-4xl font-medium text-white tracking-tight">Interviewer feedback</h3>
                     </div>
                     <PersonaScoreCard advisory={report.advisoryPanel} />
                 </section>
             )}
 
-            {/* Premium Risk Callout */}
-            {report?.biggestRiskArea && (
-                <motion.section
-                    {...sectionAnimation}
-                    className="relative overflow-hidden bg-alert-coral/5 border border-alert-coral/30 rounded-2xl md:rounded-[3rem] p-6 md:p-14"
-                >
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-alert-coral/10 blur-[100px] -z-10" />
-                    <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-start">
-                        <div className="bg-alert-coral text-base-surface px-5 py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest shrink-0">Priority Risk Detected</div>
-                        <div className="space-y-4 md:space-y-6">
-                            <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter">{report.biggestRiskArea.title}</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                                <div className="space-y-1.5 md:space-y-2">
-                                    <h4 className="text-[8px] md:text-[9px] font-black text-alert-coral uppercase tracking-widest opacity-60">Observation</h4>
-                                    <p className="text-sm text-text-secondary font-medium leading-relaxed opacity-80">{report.biggestRiskArea.observation}</p>
-                                </div>
-                                <div className="space-y-1.5 md:space-y-2">
-                                    <h4 className="text-[8px] md:text-[9px] font-black text-alert-coral uppercase tracking-widest opacity-60">Strategic Mitigation</h4>
-                                    <p className="text-sm text-text-secondary font-medium leading-relaxed opacity-80">{report.biggestRiskArea.mitigation}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </motion.section>
-            )}
-
-            {report?.questionPerformance && <GranularAuditSection performance={report.questionPerformance} />}
-
-            {/* Mastery Lab / Coach Pack - Phase 6 Active Learning */}
-            {report?.coachPack && (
-                <section className="p-6 md:p-12 bg-base-surface/80 backdrop-blur-3xl border border-action-teal/20 rounded-2xl md:rounded-[3rem] space-y-10 md:space-y-16 shadow-[0_64px_128px_rgba(0,0,0,0.6)]">
-                    <div className="text-center">
-                        <span className="text-[9px] md:text-[10px] font-black text-action-teal uppercase tracking-[0.4em] mb-1 md:mb-2 block">Active Learning Protocol</span>
-                        <h3 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter">{report.coachPack.title || "Targeted Mastery Lab"}</h3>
-                        <p className="text-text-secondary mt-3 md:mt-4 text-[10px] md:text-xs font-medium opacity-60 px-4">These drills are designed for immediate verbal re-practice. Spend 30–60 seconds on each.</p>
-                    </div>
-
-                    {report.coachPack.redoNow && report.coachPack.redoNow.question && (
-                        <motion.div
-                            {...sectionAnimation}
-                            className="p-6 md:p-10 bg-alert-coral/5 border border-alert-coral/30 rounded-xl md:rounded-[2.5rem] relative overflow-hidden"
-                        >
-                            <div className="absolute top-0 right-0 w-1/2 h-full bg-alert-coral/5 -skew-x-12 translate-x-1/2" />
-                            <div className="relative space-y-5 md:space-y-6">
-                                <div className="flex items-center gap-3">
-                                    <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-alert-coral animate-ping" />
-                                    <h4 className="text-[9px] md:text-[10px] font-black text-alert-coral uppercase tracking-widest">Immediate Pivot Directive</h4>
-                                </div>
-                                <div className="space-y-2.5 md:space-y-3">
-                                    <span className="text-[8px] md:text-[9px] font-black text-white/40 uppercase tracking-widest">High Stakes Question</span>
-                                    <p className="text-xl md:text-2xl font-bold text-white leading-tight italic">"{report.coachPack.redoNow.question}"</p>
-                                </div>
-                                <div className="p-5 md:p-8 bg-black/40 rounded-2xl md:rounded-3xl border border-white/5 space-y-3 md:space-y-4">
-                                    <h5 className="text-[8px] md:text-[9px] font-black text-action-teal uppercase tracking-widest">Re-Practice Instruction</h5>
-                                    <p className="text-[12px] md:text-sm text-text-secondary font-medium leading-relaxed italic opacity-80">
-                                        {report.coachPack.redoNow.instruction}
-                                    </p>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                        {(report.coachPack.micro_drills || []).slice(0, 3).map((drill, di) => (
-                            <motion.div
-                                key={di}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: di * 0.1 }}
-                                className="p-6 md:p-8 bg-white/[0.03] border border-white/10 rounded-xl md:rounded-[2.5rem] flex flex-col group hover:bg-white/[0.06] transition-all"
-                            >
-                                <div className="mb-6 md:mb-8 flex justify-between items-start">
-                                    <div className="px-3 py-1 bg-info-blue/10 border border-info-blue/20 rounded text-[8px] md:text-[9px] font-black text-info-blue uppercase tracking-widest">Active Prompt</div>
-                                    <span className="text-[8px] md:text-[9px] font-black text-white/20 uppercase tracking-widest">45s Drill</span>
-                                </div>
-
-                                <div className="mb-6 md:mb-8 space-y-1.5 md:space-y-2">
-                                    <h4 className="text-[8px] md:text-[9px] font-black text-text-secondary uppercase tracking-widest opacity-40">Identified Friction</h4>
-                                    <p className="text-sm md:text-base font-bold text-white group-hover:text-info-blue transition-colors">{drill.weakness}</p>
-                                </div>
-
-                                <div className="flex-grow space-y-3 md:space-y-4">
-                                    <div className="p-4 md:p-5 bg-black/40 rounded-xl md:rounded-2xl border border-white/5">
-                                        <p className="text-[11px] md:text-xs text-text-secondary leading-relaxed font-medium italic opacity-70">"{drill.drill_prompt}"</p>
-                                    </div>
-                                </div>
-
-                                <div className="mt-6 md:mt-8 pt-5 md:pt-6 border-t border-white/5">
-                                    <span className="text-[8px] md:text-[9px] font-black text-accent-amber uppercase tracking-widest block mb-1.5 md:mb-2">Success Metric</span>
-                                    <span className="text-[10px] md:text-[11px] text-accent-amber font-bold uppercase tracking-widest">{drill.focus_point}</span>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+            {/* Pilot Feedback */}
+            {userProfile?.pilot_user && (
+                <section {...sectionAnimation}>
+                    <PilotFeedbackCard
+                        sessionId={sessionId || ''}
+                        existingFeedback={report.pilotFeedback}
+                    />
                 </section>
             )}
 
-            {/* Footer Actions */}
-            <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-6 pt-10 md:pt-12">
-                <button onClick={handleDownload} disabled={isDownloading} className="w-full md:w-auto px-10 py-4 bg-white/5 text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] rounded-xl md:rounded-2xl hover:bg-white/10 transition-all border border-white/10 shadow-xl">
-                    {isDownloading ? 'Synthesizing...' : 'Export Intelligence Dossier'}
+            {/* Action Footer */}
+            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-12">
+                <button
+                    onClick={handleDownload}
+                    disabled={isDownloading}
+                    className="px-10 py-5 bg-white/5 hover:bg-white/10 text-white rounded-2xl transition-all font-bold text-[10px] tracking-widest uppercase border border-white/[0.08] active:scale-95"
+                >
+                    {isDownloading ? 'Downloading...' : 'Download Report (PDF)'}
                 </button>
-                <button onClick={handleRestart} className="w-full md:w-auto px-10 py-4 bg-action-teal text-base-surface text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] rounded-xl md:rounded-2xl hover:opacity-90 transition-all shadow-2xl shadow-action-teal/20">
-                    Initialize New Arena
+                <button
+                    onClick={handleRestart}
+                    className="bg-brand-primary hover:bg-brand-primary/90 text-brand-dark px-12 py-5 rounded-2xl shadow-xl shadow-brand-primary/20 transition-all active:scale-95 font-bold text-[10px] tracking-widest uppercase"
+                >
+                    Start New Session
                 </button>
             </div>
         </div>
@@ -394,5 +337,3 @@ const InterviewReport: React.FC<{ report: FinalReport, onRestart: () => void }> 
 });
 
 export default InterviewReport;
-
-

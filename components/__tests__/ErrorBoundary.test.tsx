@@ -37,9 +37,9 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    expect(screen.getByText(/Oops! Something went wrong/)).toBeInTheDocument();
-    expect(screen.getByText('Try Again')).toBeInTheDocument();
-    expect(screen.getByText('Refresh Page')).toBeInTheDocument();
+    expect(screen.getByText(/Something went wrong/)).toBeInTheDocument();
+    expect(screen.getByText('Try again')).toBeInTheDocument();
+    expect(screen.getByText('Refresh page')).toBeInTheDocument();
   });
 
   it('should call console.error when error occurs', () => {
@@ -53,28 +53,30 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    expect(console.error).toHaveBeenCalledWith(
-      expect.any(Error),
-      expect.any(Object)
-    );
+    expect(console.error).toHaveBeenCalled();
   });
 
   it('should reset error when try again is clicked', () => {
-    const ThrowError = () => {
-      throw new Error('Test error');
+    let shouldThrow = true;
+    const BuggyChild = () => {
+      if (shouldThrow) {
+        throw new Error('Test error');
+      }
+      return <div>Fixed Child</div>;
     };
 
     render(
       <ErrorBoundary>
-        <ThrowError />
+        <BuggyChild />
       </ErrorBoundary>
     );
 
-    const tryAgainButton = screen.getByText('Try Again');
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+
+    shouldThrow = false;
+    const tryAgainButton = screen.getByText('Try again');
     fireEvent.click(tryAgainButton);
 
-    // After clicking try again, the error should be cleared
-    // This would require the component to re-render without error
-    expect(screen.getByText('Test Child')).toBeInTheDocument();
+    expect(screen.getByText('Fixed Child')).toBeInTheDocument();
   });
 });

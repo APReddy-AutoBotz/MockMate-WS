@@ -128,7 +128,7 @@ class PDFBuilder {
         this.y -= 120;
         this.drawText('SESSION INTELLIGENCE REPORT', MARGIN, this.y, this.helveticaBold, 10, colors.infoBlue);
         this.y -= 30;
-        const mainTitle = report.jdInsights?.mustHaveSkills?.[0] || "Assessment";
+        const mainTitle = report.biggestRiskArea?.title || report.readiness?.status?.replace(/_/g, ' ') || "Assessment";
         this.drawText(mainTitle, MARGIN, this.y, this.helveticaBold, 22, colors.textPrimary, PAGE_WIDTH - 100);
         this.y -= 45;
         this.drawText(`Status: ${report.readiness?.status || 'N/A'}`, MARGIN, this.y, this.helveticaBold, 12, colors.actionTeal);

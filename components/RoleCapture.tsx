@@ -1,8 +1,6 @@
-
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { UserProfile } from '../types';
-import { useIsMobile } from '../hooks/useIsMobile';
 
 interface RoleCaptureProps {
     userProfile: UserProfile | null;
@@ -11,8 +9,7 @@ interface RoleCaptureProps {
     onViewHistory: () => void;
 }
 
-const RoleCapture: React.FC<RoleCaptureProps> = ({ userProfile, onRoleSubmit, onBack, onViewHistory }) => {
-    const isMobile = useIsMobile();
+const RoleCapture: React.FC<RoleCaptureProps> = ({ userProfile, onRoleSubmit, onBack }) => {
     const [intentText, setIntentText] = useState('');
     const [companyName, setCompanyName] = useState(userProfile?.companyName || '');
     const [companyUrl, setCompanyUrl] = useState(userProfile?.companyUrl || '');
@@ -25,97 +22,104 @@ const RoleCapture: React.FC<RoleCaptureProps> = ({ userProfile, onRoleSubmit, on
         }
     };
 
-    const welcomeMessage = userProfile ? `Welcome back, ${userProfile.name}` : 'Initialize Environment';
-
     return (
-        <div className="relative flex flex-col items-center text-center text-text-primary p-6 md:p-12 mt-16 md:mt-0">
-            {/* Redundant nav buttons removed - now handled by App.tsx header */}
-
-            <header className="max-w-xl mb-10 md:mb-16">
-                <h2 className="text-3xl md:text-6xl font-serif font-bold mb-4 md:mb-6 tracking-tight text-white leading-tight md:leading-none">
-                    {welcomeMessage}
+        <div className="relative z-10 flex w-full flex-col items-center px-6 py-10 md:px-10 md:py-16">
+            <header className="mb-10 w-full max-w-3xl space-y-4 text-center md:mb-14">
+                <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.12em] text-brand-primary">Interview setup</span>
+                <h2 className="text-3xl font-medium tracking-tight text-white md:text-5xl">
+                    What job are you practicing for?
                 </h2>
-                <p className="text-sm md:text-base text-text-secondary font-medium leading-relaxed opacity-60">
-                    Define your target objective. Our intelligence engine will assemble the required panel and constraints instantly.
+                <p className="mx-auto max-w-xl text-sm leading-relaxed text-brand-tint md:text-base">
+                    Tell us the role you want. We will set up practice questions that match your goal.
                 </p>
             </header>
 
-            <div className="w-full max-w-xl flex flex-col items-center space-y-6 md:space-y-8">
-                <div className="w-full relative group">
+            <div className="w-full max-w-4xl space-y-10">
+                <div className="space-y-4">
+                    <div className="mb-2 flex items-center gap-4">
+                        <div className="h-px flex-grow bg-brand-tint/15" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-brand-tint">Target role</span>
+                        <div className="h-px flex-grow bg-brand-tint/15" />
+                    </div>
+
                     <textarea
                         value={intentText}
                         onChange={(e) => setIntentText(e.target.value)}
-                        placeholder="e.g. Director of Engineering"
-                        className="w-full h-32 md:h-40 bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-2xl md:rounded-[2.5rem] py-6 md:py-8 px-6 md:px-10 text-white font-sans font-bold placeholder:text-white/10 focus:outline-none focus:border-action-teal/40 text-xl md:text-2xl transition-all resize-none shadow-2xl leading-tight"
-                        aria-label="Your interview goal"
+                        placeholder="e.g. Sales Manager, Teacher, Engineer..."
+                        className="h-32 w-full resize-none rounded-[24px] border border-brand-tint/15 bg-white/[0.03] px-8 py-6 text-xl font-medium tracking-tight text-white shadow-2xl outline-none backdrop-blur-2xl transition-all placeholder:text-brand-tint/45 focus:border-brand-primary/50 focus:bg-white/[0.05] md:h-40 md:px-10 md:py-8 md:text-3xl"
                         autoFocus
                     />
-                    <div className="absolute bottom-6 md:bottom-8 right-8 md:right-10 label-mono text-white/10 group-focus-within:text-action-teal/40 transition-colors text-[8px] md:text-[9px]">
-                        Target Objective
+
+                    <div className="pt-2">
+                        <button
+                            onClick={() => setShowCompanyFields(!showCompanyFields)}
+                            className="mx-auto flex items-center gap-2 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-brand-tint transition-all hover:text-brand-primary"
+                        >
+                            <span>{showCompanyFields ? '-' : '+'}</span>
+                            {showCompanyFields ? 'Hide company details' : 'Add company details (optional)'}
+                        </button>
+
+                        <AnimatePresence>
+                            {showCompanyFields && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="mt-6 overflow-hidden"
+                                >
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Company name"
+                                            value={companyName}
+                                            onChange={(e) => setCompanyName(e.target.value)}
+                                            className="rounded-xl border border-brand-tint/15 bg-white/[0.03] px-6 py-4 text-base font-medium text-white outline-none transition-all placeholder:text-brand-tint/45 focus:border-brand-primary/40"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Company website (optional)"
+                                            value={companyUrl}
+                                            onChange={(e) => setCompanyUrl(e.target.value)}
+                                            className="rounded-xl border border-brand-tint/15 bg-white/[0.03] px-6 py-4 text-base font-medium text-white outline-none transition-all placeholder:text-brand-tint/45 focus:border-brand-primary/40"
+                                        />
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
 
-                <div className="w-full">
-                    <button
-                        onClick={() => setShowCompanyFields(!showCompanyFields)}
-                        className="label-mono text-[9px] text-white/20 hover:text-action-teal transition-all flex items-center gap-2 mx-auto"
-                    >
-                        {showCompanyFields ? '[-] Hide Strategic Grounding' : '[+] Add Strategic Grounding (Company Vibe)'}
-                    </button>
-
-                    <AnimatePresence>
-                        {showCompanyFields && (
-                            <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden mt-6"
-                            >
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-                                    <input
-                                        type="text"
-                                        placeholder="Company Name"
-                                        value={companyName}
-                                        onChange={(e) => setCompanyName(e.target.value)}
-                                        className="bg-white/[0.03] backdrop-blur-xl border border-white/5 rounded-xl md:rounded-2xl px-6 md:px-8 py-4 md:py-5 text-sm md:text-base text-white font-sans placeholder:text-white/20 focus:border-action-teal/40 outline-none transition-all shadow-xl"
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Company URL"
-                                        value={companyUrl}
-                                        onChange={(e) => setCompanyUrl(e.target.value)}
-                                        className="bg-white/[0.03] backdrop-blur-xl border border-white/5 rounded-xl md:rounded-2xl px-6 md:px-8 py-4 md:py-5 text-sm md:text-base text-white font-sans placeholder:text-white/20 focus:border-action-teal/40 outline-none transition-all shadow-xl"
-                                    />
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-6 md:mt-10">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <button
                         onClick={() => handleSubmit('structured')}
                         disabled={!intentText.trim()}
-                        className="w-full bg-white/[0.02] backdrop-blur-xl text-text-primary p-6 md:p-10 rounded-2xl md:rounded-[2.5rem] hover:bg-white/[0.05] hover:border-info-blue/30 transition-all disabled:opacity-20 disabled:cursor-not-allowed border border-white/10 text-left group flex flex-col justify-between h-40 md:h-56 shadow-2xl"
+                        className="group relative rounded-[24px] border border-brand-tint/15 bg-white/[0.035] p-8 text-left shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-brand-primary/30 disabled:opacity-70 disabled:hover:translate-y-0"
                     >
-                        <div>
-                            <span className="label-mono text-info-blue mb-2 md:mb-4 block text-[8px] md:text-[9px]">Protocol Alpha</span>
-                            <h3 className="font-serif font-bold text-xl md:text-2xl text-white mb-1 md:mb-2">The Blueprint</h3>
-                            <p className="text-[10px] md:text-xs text-text-secondary font-medium leading-relaxed opacity-60">Structured strategic rehearsal based on a ground-truth plan.</p>
+                        <div className="space-y-4">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-brand-primary">Guided practice</span>
+                            <h3 className="text-2xl font-medium tracking-tight text-white">Question by question</h3>
+                            <p className="text-sm leading-relaxed text-brand-tint">Answer one question at a time and get comfortable with the basics.</p>
                         </div>
-                        <span className="label-mono text-[8px] md:text-[9px] opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0 transition-all">Initialize &rarr;</span>
+                        <div className="mt-8 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-primary">Start practice</div>
                     </button>
+
                     <button
                         onClick={() => handleSubmit('conversational')}
                         disabled={!intentText.trim()}
-                        className="w-full bg-action-teal/[0.03] backdrop-blur-xl text-text-primary p-6 md:p-10 rounded-2xl md:rounded-[2.5rem] hover:bg-action-teal/[0.06] hover:border-action-teal/40 transition-all disabled:opacity-20 disabled:cursor-not-allowed border border-action-teal/10 text-left group flex flex-col justify-between h-40 md:h-56 shadow-2xl"
+                        className="group relative rounded-[24px] border border-brand-tint/15 bg-white/[0.035] p-8 text-left shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-brand-primary/30 disabled:opacity-70 disabled:hover:translate-y-0"
                     >
-                        <div>
-                            <span className="label-mono text-action-teal mb-2 md:mb-4 block text-[8px] md:text-[9px]">Protocol Beta</span>
-                            <h3 className="font-serif font-bold text-xl md:text-2xl text-white mb-1 md:mb-2">The Arena</h3>
-                            <p className="text-[10px] md:text-xs text-text-secondary font-medium leading-relaxed opacity-60">Dynamic, unscripted environment that adapts to your presence.</p>
+                        <div className="space-y-4">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-brand-primary">Conversation practice</span>
+                            <h3 className="text-2xl font-medium tracking-tight text-white">Natural back and forth</h3>
+                            <p className="text-sm leading-relaxed text-brand-tint">Practice speaking through a realistic interview conversation.</p>
                         </div>
-                        <span className="label-mono text-[8px] md:text-[9px] opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0 transition-all">Initialize &rarr;</span>
+                        <div className="mt-8 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-primary">Start conversation</div>
+                    </button>
+                </div>
+
+                <div className="flex justify-center pt-6">
+                    <button onClick={onBack} className="text-[10px] font-bold uppercase tracking-[0.12em] text-brand-tint transition-all hover:text-white">
+                        Back to practice home
                     </button>
                 </div>
             </div>
@@ -124,4 +128,3 @@ const RoleCapture: React.FC<RoleCaptureProps> = ({ userProfile, onRoleSubmit, on
 };
 
 export default RoleCapture;
-
